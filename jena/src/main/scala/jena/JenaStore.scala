@@ -9,7 +9,7 @@ import com.hp.hpl.jena.sparql.core.DatasetGraph
 import com.hp.hpl.jena.sparql.modify.GraphStoreBasic
 import com.hp.hpl.jena.datatypes.{ TypeMapper, RDFDatatype }
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ops => _, _ }
+import scala.concurrent._
 import scala.util.Try
 import scalaz.Free
 import org.slf4j.{ Logger, LoggerFactory }

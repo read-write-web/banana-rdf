@@ -4,6 +4,9 @@ import org.ensime.sbt.Plugin.Settings.ensimeConfig
 import org.ensime.sbt.util.SExp._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform.defaultScalariformSettings
+import scala.scalajs.sbtplugin._
+import ScalaJSPlugin._
+import ScalaJSKeys._
 
 object BuildSettings {
 
@@ -12,14 +15,18 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ defaultScalariformSettings ++ Seq (
     organization := "org.w3",
     version      := "0.5-SNAPSHOT",
-    scalaVersion := "2.10.3",
-    javacOptions ++= Seq("-source","1.7", "-target","1.7"),
+    scalaVersion := "2.11.0-M7",
+    javacOptions ++= Seq("-source","1.7", "-target","1.7" ),
     fork := false,
     parallelExecution in Test := false,
     offline := true,
     // TODO
     testOptions in Test += Tests.Argument("-oD"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize", "-feature", "-language:implicitConversions,higherKinds", "-Xmax-classfile-name", "140", "-Yinline-warnings"),
+    scalacOptions ++= Seq("-Ydelambdafy:method",
+                          "-deprecation", "-unchecked", "-optimize", "-feature", 
+                          "-language:implicitConversions,higherKinds", 
+                          "-Xmax-classfile-name", "140", 
+                          "-Yinline-warnings"),
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     resolvers += "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
@@ -82,16 +89,15 @@ object BananaRdfBuild extends Build {
 
   import BuildSettings._
   
-  val scalaActors = "org.scala-lang" % "scala-actors" % "2.10.2"
 
-  val akka = "com.typesafe.akka" %% "akka-actor" % "2.1.4"
-  val akkaTransactor = "com.typesafe.akka" %% "akka-transactor" % "2.1.4"
+  val akka = "com.typesafe.akka" %% "akka-actor" % "2.2.3"
+  val akkaTransactor = "com.typesafe.akka" %% "akka-transactor" % "2.2.3"
 
 //  val scalaStm = "org.scala-tools" %% "scala-stm" % "0.7"
 
   val asyncHttpClient = "com.ning" % "async-http-client" % "1.7.12"
 
-  val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
+  val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.5" 
 
   val jodaTime = "joda-time" % "joda-time" % "2.1"
   val jodaConvert = "org.joda" % "joda-convert" % "1.2"
@@ -100,22 +106,20 @@ object BananaRdfBuild extends Build {
     libraryDependencies += jodaTime % "provided",
     libraryDependencies += jodaConvert % "provided")
 
-  val scalatest = "org.scalatest" %% "scalatest" % "2.0.RC1-SNAP4"
+  val scalatest = "org.scalatest" %% "scalatest" % "2.0.1-SNAP4"
   
   val testsuiteDeps =
     Seq(
-//      libraryDependencies += scalaActors,
       libraryDependencies += scalatest
     )
 
-  val iterateeDeps = "play" %% "play-iteratees" % "2.1.1"
-  val playDeps = "play" %% "play" % "2.1.1"
 
+  val iterateeDeps = "play" %% "play-iteratees" % "2.2.2-RC1"
+  val playDeps = "play" %% "play" % "2.2.2-RC1"
   val reactiveMongo = "org.reactivemongo" %% "play2-reactivemongo" % "0.9" excludeAll(ExclusionRule(organization = "io.netty"), ExclusionRule(organization = "play"))
 
   val testDeps =
     Seq(
-//      libraryDependencies += scalaActors % "test",
       libraryDependencies += scalatest % "test"
     )
   
@@ -157,6 +161,7 @@ object BananaRdfBuild extends Build {
       rdfTestSuite,
       jena,
       sesame,
+      rdfStoreJS,
       examples))
   
   lazy val rdf = Project(
@@ -205,42 +210,58 @@ object BananaRdfBuild extends Build {
     )
   ) dependsOn (rdf, rdfTestSuite % "test")
 
+  lazy val rdfStoreJS = Project(
+    id = "rdf-store-js",
+    base = file("rdfstore.js"),
+    settings =  scalaJSSettings ++ buildSettings ++ testDeps ++ Seq(
+        libraryDependencies ++= Seq(
+          ("org.scala-lang" % "scala-compiler" % scalaVersion.value)
+            .exclude("org.scala-lang.modules", "scala-parser-combinators_2.11.0-M6") //due to bug in scala 11 ... M7
+            .exclude("org.scala-lang.modules", "scala-xml_2.11.0-M6"),               //due to bug in scala 11 ... M7
+          "org.scala-lang.modules.scalajs" %% "scalajs-jquery" % "0.2-SNAPSHOT"
+
+        ),
+        unmanagedSources in (Compile, ScalaJSKeys.packageJS) += baseDirectory.value / "js" / "rdfstore.startup.js"
+    )
+  ) dependsOn (rdf, rdfTestSuite % "test")
+
+
   lazy val examples = Project(
     id = "examples",
     base = file("examples"),
-    settings = buildSettings
+    settings = buildSettings 
   ) dependsOn (sesame, jena)
 
   // this is _experimental_
   // please do not add this projet to the main one
-  lazy val experimental = Project(
-    id = "experimental",
-    base = file("experimental"),
-    settings = buildSettings ++ testDeps ++ sesameCoreDeps ++ Seq(
-      libraryDependencies += akka,
-      libraryDependencies += akkaTransactor,
-      libraryDependencies += iterateeDeps,
-      libraryDependencies += reactiveMongo,
-      libraryDependencies += playDeps,
-      libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.7" % "provided",
-      libraryDependencies += "log4j" % "log4j" % "1.2.16" % "provided"
-    )
-  ) dependsOn (rdfTestSuite % "test")
+//  lazy val experimental = Project(
+//    id = "experimental",
+//    base = file("experimental"),
+//    settings = buildSettings ++ testDeps ++ sesameCoreDeps ++ Seq(
+//      libraryDependencies += akka,
+//      libraryDependencies += akkaTransactor,
+//      libraryDependencies += iterateeDeps,
+//      libraryDependencies += reactiveMongo,
+//      libraryDependencies += playDeps,
+//      libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.7" % "provided",
+//      libraryDependencies += "log4j" % "log4j" % "1.2.16" % "provided"
+//    )
+//  ) dependsOn (rdfTestSuite % "test")
 
-  lazy val ldp = Project(
-    id = "ldp",
-    base = file("ldp"),
-    settings = buildSettings ++ testDeps ++ sesameCoreDeps ++ Seq(
-        libraryDependencies += akka,
-        libraryDependencies += asyncHttpClient,
-        libraryDependencies += akkaTransactor,
-        libraryDependencies += scalaz,
-        libraryDependencies += iterateeDeps,
-        libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.7" % "provided",
-        libraryDependencies += "log4j" % "log4j" % "1.2.16" % "provided"
-    )
-  ) dependsOn (rdfTestSuite % "test")
-
+//  lazy val ldp = Project(
+//    id = "ldp",
+//    base = file("ldp"),
+//    settings = buildSettings ++ testDeps ++ sesameCoreDeps ++ Seq(
+//        libraryDependencies += akka,
+//        libraryDependencies += asyncHttpClient,
+//        libraryDependencies += akkaTransactor,
+//        libraryDependencies += scalaz,
+//        libraryDependencies += iterateeDeps,
+//        libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.7" % "provided",
+//        libraryDependencies += "log4j" % "log4j" % "1.2.16" % "provided"
+//    )
+//  ) dependsOn (rdfTestSuite % "test")
+//
   
 }
 
