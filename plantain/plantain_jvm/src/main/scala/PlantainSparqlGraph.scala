@@ -7,6 +7,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class PlantainGraphSparqlEngine(ec: ExecutionContext) extends SparqlEngine[Plantain, Plantain#Graph] {
   implicit val ecc = ec
+  import org.w3.banana.plantain.model_jvm.Graph._
 
   /** Executes a Select query. */
   override def executeSelect(graph: Plantain#Graph,
@@ -32,3 +33,4 @@ class PlantainGraphSparqlEngine(ec: ExecutionContext) extends SparqlEngine[Plant
 object PlantainGraphSparqlEngine {
   def apply() = new PlantainGraphSparqlEngine(sameThreadExecutionContext)
 }
+

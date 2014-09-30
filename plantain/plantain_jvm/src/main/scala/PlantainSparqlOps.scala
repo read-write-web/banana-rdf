@@ -3,10 +3,10 @@ package org.w3.banana.plantain
 import org.openrdf.query.parser.sparql.SPARQLParserFactory
 import org.openrdf.query.parser.{ ParsedBooleanQuery, ParsedGraphQuery, ParsedTupleQuery }
 import org.w3.banana.SparqlOps._
-import org.w3.banana.plantain.model._
+import org.w3.banana.plantain.model_jvm.Node
 import org.w3.banana.{ Prefix, SparqlOps, VarNotFound }
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.util._
 
 object PlantainSparqlOps extends SparqlOps[Plantain] {
@@ -69,3 +69,4 @@ object PlantainSparqlOps extends SparqlOps[Plantain] {
   }
 
 }
+

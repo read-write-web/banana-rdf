@@ -1,7 +1,7 @@
 package org.w3.banana.plantain
 
 import info.aduna.iteration.CloseableIteration
-import org.openrdf.model.impl.ContextStatementImpl
+import org.openrdf.model.impl.{ ValueFactoryImpl, ContextStatementImpl }
 import org.openrdf.model.{ URI => SesameURI, Graph => _, _ }
 import org.openrdf.query.algebra._
 import org.openrdf.query.algebra.evaluation.TripleSource
@@ -11,13 +11,15 @@ import org.openrdf.query.impl.MapBindingSet
 import org.openrdf.query.parser.sparql.SPARQLParserFactory
 import org.openrdf.query.{ Binding, BindingSet }
 import org.w3.banana.plantain.model._
+import org.w3.banana.plantain.model_jvm.Node
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 object PlantainUtil {
   //todo: Is it a good idea to put this here?
-  import model.Graph.vf
+  val vf: ValueFactory = ValueFactoryImpl.getInstance()
+
   private val p = new SPARQLParserFactory().getParser()
 
   def executeSelect(tripleSource: TripleSource, query: Plantain#SelectQuery, bindings: Map[String, Plantain#Node]): Plantain#Solutions = {
@@ -32,7 +34,7 @@ object PlantainUtil {
     val evaluationStrategy = new EvaluationStrategyImpl(tripleSource, null, null)
     val results = evaluationStrategy.evaluate(tupleExpr, bindings.asSesame)
     val it = results.toIterator
-    var resultGraph = Graph.empty
+    var resultGraph = PlantainOps.emptyGraph
     it foreach { bindingSet =>
       try {
         val s = bindingSet.getValue("subject").asInstanceOf[Resource]
@@ -58,9 +60,9 @@ object PlantainUtil {
       import scala.collection.convert.decorateAsScala._
       for (deletePattern <- deletePatterns.asScala) {
 
-        val subject = getValueForVar(deletePattern.getSubjectVar(), whereBinding).asInstanceOf[Node]
-        val predicate = getValueForVar(deletePattern.getPredicateVar(), whereBinding).asInstanceOf[URI]
-        val obj = getValueForVar(deletePattern.getObjectVar(), whereBinding).asInstanceOf[Node];
+        val subject = getValueForVar(deletePattern.getSubjectVar(), whereBinding)
+        val predicate: Plantain#URI = getValueForVar(deletePattern.getPredicateVar(), whereBinding).asInstanceOf[Plantain#URI]
+        val obj = getValueForVar(deletePattern.getObjectVar(), whereBinding)
 
         if (deletePattern.getContextVar() == null) {
 
@@ -91,7 +93,7 @@ object PlantainUtil {
 
         if (toBeInserted != null) {
           if (toBeInserted.getContext() == null) {
-            resultGraph = graph + Triple.fromSesame(toBeInserted);
+            resultGraph = graph + Node.fromSesame(toBeInserted);
           }
         }
       }
@@ -158,7 +160,7 @@ object PlantainUtil {
     return st
   }
 
-  private def getValueForVar(va: Var, bindings: BindingSet): Node =
+  private def getValueForVar(va: Var, bindings: BindingSet): Plantain#Node =
     if (va.hasValue()) {
       Node.fromSesame(va.getValue());
     } else {
@@ -169,6 +171,7 @@ object PlantainUtil {
     queryw: Plantain#UpdateQuery,
     map: Map[String, Plantain#Node]): Try[Plantain#Graph] = {
     import scala.collection.convert.wrapAsScala._
+    import model_jvm.Graph._
     Try {
       val bindingSet = map.asSesame
       val query = p.parseUpdate(queryw.query, "http://todo.example/")
@@ -265,10 +268,10 @@ object PlantainUtil {
       new IteratorAsCloseableIteration[T, E](iterator)
   }
 
-  implicit class Bindings(val bindings: Map[String, Plantain#Node]) extends AnyVal {
+  implicit class Bindings(val bindings: Map[String, model.Node]) extends AnyVal {
     def asSesame: BindingSet = {
       val bindingSet = new MapBindingSet(bindings.size)
-      bindings foreach { case (name, value) => bindingSet.addBinding(name, value) }
+      bindings foreach { case (name, value) => bindingSet.addBinding(name, Node.asSesame(value)) }
       bindingSet
     }
   }
@@ -283,3 +286,4 @@ object PlantainUtil {
   }
 
 }
+

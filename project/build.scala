@@ -4,7 +4,7 @@ import com.inthenow.sbt.scalajs.SbtScalajs
 import com.inthenow.sbt.scalajs.SbtScalajs._
 import com.typesafe.sbt.SbtScalariform.defaultScalariformSettings
 import sbt.Keys._
-import sbt.{ExclusionRule, _}
+import sbt._
 
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
@@ -324,8 +324,10 @@ object BananaRdfBuild extends Build {
     id = "plantain_common_jvm",
     base = file("plantain/plantain_common_jvm"),
     settings = buildSettings ++ scalajsJvmSettings ++ Seq(
-      libraryDependencies += sesameRioTurtle,
-      libraryDependencies += akkaHttpCore,
+      libraryDependencies ++= Seq( sesameRioTurtle, sesameRioRdfxml,  
+                                   sesameQueryAlgebra, sesameQueryParser, sesameQueryResult,
+                                   sesameQueryAlgebra, 
+                                   akkaHttpCore),
       publishMavenStyle := true
     )
   ) dependsOn(rdf_jvm, rdfTestSuite_jvm % "test")

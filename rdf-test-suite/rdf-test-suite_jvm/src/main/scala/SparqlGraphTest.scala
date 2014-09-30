@@ -1,6 +1,5 @@
 package org.w3.banana
 
-import akka.actor.Status.Success
 import org.w3.banana.diesel._
 import org.w3.banana.syntax._
 import org.scalatest._

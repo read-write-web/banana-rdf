@@ -9,10 +9,8 @@ import org.w3.banana.plantain.PlantainUtil._
 import scala.util._
 
 object PlantainQueryResultsReader {
-
   def apply[T](implicit sesameSparqlSyntax: SesameAnswerInput[T]): SparqlQueryResultsReader[Plantain, T] =
     new SparqlQueryResultsReader[Plantain, T] {
-
       def read(in: InputStream, base: String) = {
         val bytes: Array[Byte] = Iterator.continually(in.read).takeWhile((-1).!=).map(_.toByte).toArray
         parse(bytes)
@@ -37,15 +35,12 @@ object PlantainQueryResultsReader {
         //it is really horrible to have to turn a nice char array into bytes for parsing!
         parse(new String(queri).getBytes("UTF-8"))
       }
-
     }
 
   implicit val queryResultsReaderJson: SparqlQueryResultsReader[Plantain, SparqlAnswerJson] =
     PlantainQueryResultsReader[SparqlAnswerJson]
-
   implicit val queryResultsReaderXml: SparqlQueryResultsReader[Plantain, SparqlAnswerXml] =
     PlantainQueryResultsReader[SparqlAnswerXml]
-
 }
 
 /* copied from banana-sesame */
@@ -54,21 +49,19 @@ import org.openrdf.query.resultio.{ BooleanQueryResultFormat, TupleQueryResultFo
 
 trait SesameAnswerInput[T] {
   def tupleFormat: TupleQueryResultFormat
+
   def booleanFormat: BooleanQueryResultFormat
 }
 
 object SesameAnswerInput {
-
   implicit val Json: SesameAnswerInput[SparqlAnswerJson] =
     new SesameAnswerInput[SparqlAnswerJson] {
       val tupleFormat = TupleQueryResultFormat.JSON
       val booleanFormat = BooleanQueryResultFormat.forMIMEType("application/sparql-results+json")
     }
-
   implicit val XML: SesameAnswerInput[SparqlAnswerXml] =
     new SesameAnswerInput[SparqlAnswerXml] {
       val tupleFormat = TupleQueryResultFormat.SPARQL
       val booleanFormat = BooleanQueryResultFormat.forMIMEType("application/sparql-results+xml")
     }
-
 }

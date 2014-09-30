@@ -7,6 +7,7 @@ import org.openrdf.model.impl._
 import org.openrdf.rio.turtle._
 import org.openrdf.{ model => sesame }
 import org.w3.banana._
+import org.w3.banana.plantain.model.Graph
 
 import scala.util.Try
 
@@ -22,7 +23,7 @@ object PlantainTurtleWriter extends RDFWriter[Plantain, Turtle] {
     override def toString(): String = uri
   }
 
-  class Writer(graph: Plantain#Graph, outputstream: OutputStream, baseUri: String) {
+  class Writer(graph: Graph[Uri], outputstream: OutputStream, baseUri: String) {
 
     object Uri {
       def unapply(node: model.Node): Option[String] = node match {
@@ -71,7 +72,7 @@ object PlantainTurtleWriter extends RDFWriter[Plantain, Turtle] {
 
   }
 
-  def write(graph: Plantain#Graph, outputstream: OutputStream, base: String): Try[Unit] = {
+  def write(graph: Graph[Uri], outputstream: OutputStream, base: String): Try[Unit] = {
     val writer = new Writer(graph, outputstream, base)
     writer.write()
   }
@@ -85,7 +86,7 @@ object PlantainTurtleWriter extends RDFWriter[Plantain, Turtle] {
 
   }
 
-  def asString(graph: Plantain#Graph, base: String): Try[String] = Try {
+  def asString(graph: Graph[Uri], base: String): Try[String] = Try {
     val result = new ByteArrayOutputStream()
     //todo: clearly this trasformation into a byte array and then back into a character string,
     //shows that working at the byte level is wrong.
