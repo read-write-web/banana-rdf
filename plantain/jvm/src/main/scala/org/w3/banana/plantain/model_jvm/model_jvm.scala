@@ -3,14 +3,14 @@ package org.w3.banana.plantain.model_jvm
 import akka.http.model.Uri
 import info.aduna.iteration.CloseableIteration
 import org.openrdf.model.impl._
-import org.openrdf.model.{ BNode => SesameBNode, Graph => SesameGraph, Literal => SesameLiteral, URI => SesameURI, _ }
+import org.openrdf.model.{BNode => SesameBNode, Graph => SesameGraph, Literal => SesameLiteral, URI => SesameURI, _}
 import org.openrdf.query.QueryEvaluationException
 import org.openrdf.query.algebra.evaluation.TripleSource
-import org.w3.banana.plantain.{ Plantain, model }
+import org.w3.banana.plantain.{Plantain, model}
 
 object Node {
   val xmls = model.URI(Uri("http://www.w3.org/2001/XMLSchema#string"))
-  import org.w3.banana.plantain.PlantainOps.{ makeLang, makeUri, _ }
+  import org.w3.banana.plantain.PlantainOps.{makeLang, makeUri, _}
 
   def fromSesame(value: Value): Plantain#Node = value match {
     case resource: Resource => fromSesame(resource)

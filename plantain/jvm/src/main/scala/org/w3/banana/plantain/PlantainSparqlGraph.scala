@@ -1,9 +1,9 @@
 package org.w3.banana.plantain
 
-import org.openrdf.model.{ URI => SesameURI }
+import org.openrdf.model.{URI => SesameURI}
 import org.w3.banana._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class PlantainGraphSparqlEngine(ec: ExecutionContext) extends SparqlEngine[Plantain, Plantain#Graph] {
   implicit val ecc = ec

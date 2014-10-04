@@ -1,6 +1,6 @@
 package org.w3.banana.plantain
 
-import java.io.{ OutputStream, Writer => jWriter }
+import java.io.{OutputStream, Writer => jWriter}
 
 import org.openrdf.query.resultio.TupleQueryResultWriter
 import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter
