@@ -14,7 +14,6 @@ import org.w3.banana._
 //todo: it is very likely that all parsers can be exchanged with any other parser
 //     and all of them be used on any rdf store
 
-
 /**typeclass that reflects a Jena String that can be used to construct a BlockingReader */
 trait SesameSyntax[T] {
   def rdfWriter(os: OutputStream, base: String): RDFWriter

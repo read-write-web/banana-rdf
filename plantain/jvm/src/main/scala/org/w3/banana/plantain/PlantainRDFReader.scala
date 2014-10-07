@@ -5,14 +5,14 @@ import java.io.InputStream
 import akka.http.model.Uri
 import com.github.jsonldjava.sesame.SesameJSONLDParser
 import org.openrdf.rio._
-import org.openrdf.rio.helpers.{JSONLDSettings, JSONLDMode}
+import org.openrdf.rio.helpers.{ JSONLDSettings, JSONLDMode }
 import org.openrdf.rio.turtle._
-import org.openrdf.{model => sesame}
+import org.openrdf.{ model => sesame }
 import org.w3.banana._
 
 import scala.util.Try
 
-abstract class AbstractPlantainReader[Syntax] extends RDFReader[Plantain,Syntax] {
+abstract class AbstractPlantainReader[Syntax] extends RDFReader[Plantain, Syntax] {
 
   implicit def ops: RDFOps[Plantain]
 
@@ -43,8 +43,8 @@ class PlantainRDFXMLReader(implicit val ops: RDFOps[Plantain]) extends AbstractP
 }
 
 class PlantainTurtleReader(implicit val ops: RDFOps[Plantain]) extends AbstractPlantainReader[Turtle] {
-   val syntax: Syntax[Turtle] = Syntax.Turtle
-   def getParser() = new TurtleParser()
+  val syntax: Syntax[Turtle] = Syntax.Turtle
+  def getParser() = new TurtleParser()
 }
 
 /**
@@ -77,7 +77,6 @@ class PlantainJSONLDFlattenedReader(implicit val ops: RDFOps[Plantain]) extends 
   val syntax = Syntax[JsonLdFlattened]
   val jsonldProfile = JSONLDMode.FLATTEN
 }
-
 
 class Sink(var graph: model.Graph[Uri] = PlantainOps.emptyGraph,
   var prefixes: Map[String, String] = Map.empty)

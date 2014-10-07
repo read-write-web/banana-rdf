@@ -1,8 +1,8 @@
 package org.w3.banana.plantain
 
-import java.io.{OutputStream, StringWriter}
+import java.io.{ OutputStream, StringWriter }
 
-import org.openrdf.{model => sesame}
+import org.openrdf.{ model => sesame }
 import org.w3.banana._
 import org.w3.banana.plantain.model_jvm.Triple._
 import org.w3.banana.sesame.SesameSyntax
@@ -10,7 +10,7 @@ import org.w3.banana.sesame.SesameSyntax
 import scala.util.Try
 
 class PlantainRDFWriter[T](ops: RDFOps[Plantain])(implicit sesameSyntax: SesameSyntax[T], _syntax: Syntax[T])
-  extends RDFWriter[Plantain, T] {
+    extends RDFWriter[Plantain, T] {
   import ops._
   val syntax = _syntax
 
@@ -18,7 +18,7 @@ class PlantainRDFWriter[T](ops: RDFOps[Plantain])(implicit sesameSyntax: SesameS
     val baseUri: Plantain#URI = makeUri(base)
     val sWriter = sesameSyntax.rdfWriter(os, base)
     sWriter.startRDF()
-    graph.triples foreach {statement =>
+    graph.triples foreach { statement =>
       import statement._
       sWriter.handleStatement(
         asSesame(subject.relativizeAgainst(baseUri),
@@ -34,12 +34,12 @@ class PlantainRDFWriter[T](ops: RDFOps[Plantain])(implicit sesameSyntax: SesameS
     val sWriter = sesameSyntax.rdfWriter(result, base)
     sWriter.startRDF()
     graph.triples foreach { triple =>
-              import triple._
-              sWriter.handleStatement(
-                asSesame(subject.relativizeAgainst(baseUri),
-                predicate.relativizeAgainst(baseUri),
-                  objectt.relativizeAgainst(baseUri)))
-            }
+      import triple._
+      sWriter.handleStatement(
+        asSesame(subject.relativizeAgainst(baseUri),
+          predicate.relativizeAgainst(baseUri),
+          objectt.relativizeAgainst(baseUri)))
+    }
     sWriter.endRDF()
     result.toString
   }
