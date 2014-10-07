@@ -318,9 +318,10 @@ object BananaRdfBuild extends Build {
     id = "plantain_jvm",
     base = file("plantain/jvm"),
     settings = buildSettings ++ scalajsJvmSettings ++ Seq(
-      libraryDependencies += akkaHttpCore,
-      libraryDependencies +=  sesameRioTurtle,
-      libraryDependencies += jsonldJava,
+      libraryDependencies ++= Seq(akkaHttpCore,
+        sesameQueryParser, sesameQueryResult,sesameQueryAlgebra,
+        sesameRioTurtle,sesameRioRdfxml,
+        jsonldJava ),
       publishMavenStyle := true
     )
   ).dependsOn(rdf_jvm, plantain_common_jvm % "compile;test->test", rdfTestSuite_jvm % "test-internal->compile")
