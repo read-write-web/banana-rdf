@@ -31,7 +31,7 @@ abstract class TurtleTestSuite[Rdf <: RDF]()(implicit ops: RDFOps[Rdf], reader: 
   val referenceGraph = graphBuilder(rdfCorePrefix)
 
   // TODO: there is a bug in Sesame with hash uris as prefix
-  val foo = "http://example.com/foo/"
+  val foo = "https://example.com/foo/"
   val fooPrefix = Prefix("foo", foo)
   val fooGraph = graphBuilder(fooPrefix)
 

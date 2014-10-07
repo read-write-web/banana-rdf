@@ -7,8 +7,13 @@ trait PlantainModule
     with RDFOpsModule
     with RecordBinderModule
     with TurtleReaderModule
-    with TurtleWriterModule
     with RDFXMLReaderModule
+    with JsonLDReaderModule
+    with TurtleWriterModule
+    with RDFXMLWriterModule
+    with JsonLDWriterModule
+    with ReaderSelectorModule
+    with WriterSelectorModule
     with SparqlOpsModule
     with SparqlGraphModule
     with XmlSolutionsWriterModule
@@ -22,11 +27,27 @@ trait PlantainModule
 
   implicit val recordBinder: binder.RecordBinder[Plantain] = binder.RecordBinder[Plantain]
 
-  implicit val turtleReader: RDFReader[Plantain, Turtle] = PlantainTurtleReader
+  implicit val turtleReader: RDFReader[Plantain, Turtle] = new PlantainTurtleReader
 
-  implicit val turtleWriter: RDFWriter[Plantain, Turtle] = PlantainTurtleWriter
+  implicit val rdfXMLReader: RDFReader[Plantain, RDFXML] = new PlantainRDFXMLReader
 
-  implicit val rdfXMLReader: RDFReader[Plantain, RDFXML] = PlantainRDFXMLReader
+  implicit val jsonldCompactReader: RDFReader[Plantain, JsonLdCompacted] = new PlantainJSONLDCompactedReader
+
+  implicit val jsonldExpandedReader: RDFReader[Plantain, JsonLdExpanded] = new PlantainJSONLDExpandedReader
+
+  implicit val jsonldFlattenedReader: RDFReader[Plantain, JsonLdFlattened] = new PlantainJSONLDFlattenedReader
+
+  val plantainRDFWriterHelper = new PlantainRDFWriterHelper
+
+  implicit val rdfXMLWriter: RDFWriter[Plantain, RDFXML] = plantainRDFWriterHelper.rdfxmlWriter
+
+  implicit val turtleWriter: RDFWriter[Plantain, Turtle] = plantainRDFWriterHelper.turtleWriter
+
+  implicit val jsonldCompactedWriter: RDFWriter[Plantain, JsonLdCompacted] = plantainRDFWriterHelper.jsonldCompactedWriter
+
+  implicit val jsonldExpandedWriter: RDFWriter[Plantain, JsonLdExpanded] = plantainRDFWriterHelper.jsonldExpandedWriter
+
+  implicit val jsonldFlattenedWriter: RDFWriter[Plantain, JsonLdFlattened] = plantainRDFWriterHelper.jsonldFlattenedWriter
 
   implicit val sparqlOps: SparqlOps[Plantain] = PlantainSparqlOps
 
@@ -43,5 +64,11 @@ trait PlantainModule
 
   implicit val jsonQueryResultsReader: SparqlQueryResultsReader[Plantain, SparqlAnswerJson] =
     PlantainQueryResultsReader.queryResultsReaderJson
+
+  implicit val readerSelector: ReaderSelector[Plantain] = ReaderSelector[Plantain, Turtle] combineWith
+    ReaderSelector[Plantain, RDFXML] combineWith ReaderSelector[Plantain, JsonLdCompacted] combineWith
+    ReaderSelector[Plantain, JsonLdExpanded] combineWith ReaderSelector[Plantain, JsonLdFlattened]
+
+  implicit val writerSelector: RDFWriterSelector[Plantain] = plantainRDFWriterHelper.selector
 
 }

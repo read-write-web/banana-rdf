@@ -1,97 +1,66 @@
 package org.w3.banana.plantain
 
-import java.io.{ ByteArrayOutputStream, OutputStream }
+import java.io.{OutputStream, StringWriter}
 
-import akka.http.model.Uri
-import org.openrdf.model.impl._
-import org.openrdf.rio.turtle._
-import org.openrdf.{ model => sesame }
+import org.openrdf.{model => sesame}
 import org.w3.banana._
-import org.w3.banana.plantain.model.Graph
+import org.w3.banana.plantain.model_jvm.Triple._
+import org.w3.banana.sesame.SesameSyntax
 
 import scala.util.Try
 
-object PlantainTurtleWriter extends RDFWriter[Plantain, Turtle] {
+class PlantainRDFWriter[T](ops: RDFOps[Plantain])(implicit sesameSyntax: SesameSyntax[T], _syntax: Syntax[T])
+  extends RDFWriter[Plantain, T] {
+  import ops._
+  val syntax = _syntax
 
-  val syntax: Syntax[Turtle] = Syntax.Turtle
-
-  /** accepts relative URIs */
-  class MyUri(uri: String) extends sesame.URI {
-    def getLocalName(): String = ???
-    def getNamespace(): String = ???
-    def stringValue(): String = uri
-    override def toString(): String = uri
-  }
-
-  class Writer(graph: Graph[Uri], outputstream: OutputStream, baseUri: String) {
-
-    object Uri {
-      def unapply(node: model.Node): Option[String] = node match {
-        case model.URI(uri) =>
-          val s = uri.toString
-          if (s.startsWith(baseUri))
-            Some(s.substring(baseUri.length))
-          else
-            Some(s)
-        case _ => None
-      }
+  def write(graph: Plantain#Graph, os: OutputStream, base: String): Try[Unit] = Try {
+    val baseUri: Plantain#URI = makeUri(base)
+    val sWriter = sesameSyntax.rdfWriter(os, base)
+    sWriter.startRDF()
+    graph.triples foreach {statement =>
+      import statement._
+      sWriter.handleStatement(
+        asSesame(subject.relativizeAgainst(baseUri),
+          predicate.relativizeAgainst(baseUri),
+          objectt.relativizeAgainst(baseUri)))
     }
-
-    def statement(s: model.Node, p: model.URI[Uri], o: model.Node): sesame.Statement = {
-      val subject: sesame.Resource = s match {
-        case Uri(uri) => new MyUri(uri)
-        case model.BNode(label) => new BNodeImpl(label)
-        case literal @ model.Literal(_, _, _) => throw new IllegalArgumentException(s"$literal was in subject position")
-      }
-      val predicate: sesame.URI = p match {
-        case model.URI(uri) => new MyUri(uri.toString)
-      }
-      val objectt: sesame.Value = o match {
-        case Uri(uri) => new MyUri(uri)
-        case model.BNode(label) => new BNodeImpl(label)
-        case model.Literal(lexicalForm, model.URI(uri), None) => new LiteralImpl(lexicalForm, new URIImpl(uri.toString))
-        case model.Literal(lexicalForm, _, Some(lang)) => new LiteralImpl(lexicalForm, lang)
-      }
-      new StatementImpl(subject, predicate, objectt)
-    }
-
-    def write(): Try[Unit] = Try {
-      val writer = new TurtleWriter(outputstream)
-      writer.startRDF()
-      graph.spo foreach {
-        case (s, pos) =>
-          pos foreach {
-            case (p, os) =>
-              os foreach { o =>
-                writer.handleStatement(statement(s, p, o))
-              }
-          }
-      }
-      writer.endRDF()
-    }
-
+    sWriter.endRDF()
   }
 
-  def write(graph: Graph[Uri], outputstream: OutputStream, base: String): Try[Unit] = {
-    val writer = new Writer(graph, outputstream, base)
-    writer.write()
+  def asString(graph: Plantain#Graph, base: String): Try[String] = Try {
+    val baseUri: Plantain#URI = makeUri(base)
+    val result = new StringWriter()
+    val sWriter = sesameSyntax.rdfWriter(result, base)
+    sWriter.startRDF()
+    graph.triples foreach { triple =>
+              import triple._
+              sWriter.handleStatement(
+                asSesame(subject.relativizeAgainst(baseUri),
+                predicate.relativizeAgainst(baseUri),
+                  objectt.relativizeAgainst(baseUri)))
+            }
+    sWriter.endRDF()
+    result.toString
   }
 
-  def main(args: Array[String]): Unit = {
-    val is = new java.io.FileInputStream("/home/betehess/projects/banana-rdf/rdf-test-suite/src/main/resources/card.ttl")
+}
 
-    val graph = PlantainTurtleReader.read(is, "http://example.com/").get
+class PlantainRDFWriterHelper(implicit ops: RDFOps[Plantain]) {
 
-    println(write(graph, System.out, "http://example.com/"))
+  implicit val rdfxmlWriter: RDFWriter[Plantain, RDFXML] = new PlantainRDFWriter[RDFXML](ops)
 
-  }
+  implicit val turtleWriter: RDFWriter[Plantain, Turtle] = new PlantainRDFWriter[Turtle](ops)
 
-  def asString(graph: Graph[Uri], base: String): Try[String] = Try {
-    val result = new ByteArrayOutputStream()
-    //todo: clearly this trasformation into a byte array and then back into a character string,
-    //shows that working at the byte level is wrong.
-    val writer = new Writer(graph, result, base)
-    writer.write()
-    new String(result.toByteArray, "UTF-8")
-  }
+  implicit val jsonldCompactedWriter: RDFWriter[Plantain, JsonLdCompacted] = new PlantainRDFWriter[JsonLdCompacted](ops)
+
+  implicit val jsonldExpandedWriter: RDFWriter[Plantain, JsonLdExpanded] = new PlantainRDFWriter[JsonLdExpanded](ops)
+
+  implicit val jsonldFlattenedWriter: RDFWriter[Plantain, JsonLdFlattened] = new PlantainRDFWriter[JsonLdFlattened](ops)
+
+  val selector: RDFWriterSelector[Plantain] =
+    RDFWriterSelector[Plantain, RDFXML] combineWith RDFWriterSelector[Plantain, Turtle] combineWith
+      RDFWriterSelector[Plantain, JsonLdCompacted] combineWith RDFWriterSelector[Plantain, JsonLdExpanded] combineWith
+      RDFWriterSelector[Plantain, JsonLdFlattened]
+
 }

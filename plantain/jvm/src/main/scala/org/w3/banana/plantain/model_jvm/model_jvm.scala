@@ -90,11 +90,15 @@ object Triple {
       model.URI(Uri(statement.getPredicate.toString)),
       Node.fromSesame(statement.getObject))
 
-  def asSesame(triple: org.w3.banana.plantain.model.Triple[Uri]): Statement = {
-    import triple._
+  def asSesame(subject: model.Node, predicate: model.URI[Uri], objectt: model.Node) : Statement =  {
     new StatementImpl(
       Node.asSesame(subject).asInstanceOf[Resource],
       Node.asSesame(predicate).asInstanceOf[SesameURI],
       Node.asSesame(objectt))
+  }
+
+  def asSesame(triple: org.w3.banana.plantain.model.Triple[Uri]): Statement = {
+    import triple._
+    asSesame(subject,predicate,objectt)
   }
 }

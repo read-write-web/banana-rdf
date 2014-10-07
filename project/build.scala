@@ -357,8 +357,12 @@ object BananaRdfBuild extends Build {
     settings = buildSettings ++ scalajsJvmSettings ++ Seq(
       unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)),
       unmanagedSourceDirectories in Test <<= (scalaSource in Test)(Seq(_)),
-      libraryDependencies += sesameRioTurtle,
-      libraryDependencies += akkaHttpCore,
+      libraryDependencies ++= Seq( sesameRioTurtle, sesameRioRdfxml,
+        sesameQueryAlgebra, sesameQueryParser, sesameQueryResult,
+        sesameQueryAlgebra,
+        akkaHttpCore,
+        jsonldJava
+      ),
       publishMavenStyle := true
     )
   ).dependsOn(rdf_jvm, plantain_common_jvm % "compile;test->test", rdfTestSuite_jvm % "test")
@@ -370,10 +374,6 @@ object BananaRdfBuild extends Build {
     settings = buildSettings ++ scalajsJvmSettings ++ Seq(
       unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)),
       unmanagedSourceDirectories in Test := Nil,
-      libraryDependencies ++= Seq( sesameRioTurtle, sesameRioRdfxml,
-                                   sesameQueryAlgebra, sesameQueryParser, sesameQueryResult,
-                                   sesameQueryAlgebra,
-                                   akkaHttpCore),
       publishMavenStyle := true
     )
   ) dependsOn(rdf_jvm, rdfTestSuite_jvm % "test")

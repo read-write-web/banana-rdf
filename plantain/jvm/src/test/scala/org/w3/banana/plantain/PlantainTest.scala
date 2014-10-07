@@ -5,8 +5,11 @@ import org.w3.banana.plantain.iso.GraphIsomorphismTest
 import org.w3.banana.rdf.iso.SimpleClassifyTest
 import org.w3.banana._
 import PlantainOps._
+import Plantain.writerSelector
 
 class PlantainTurtleTest extends TurtleTestSuite[Plantain]
+
+class PlantainJsonLDTest extends JsonLdTest[Plantain]
 
 class PlantainGraphTest extends GraphTest[Plantain]
 

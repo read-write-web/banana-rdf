@@ -1,6 +1,7 @@
 package org.w3.banana.sesame
 
-import org.openrdf.repository.sail.{ SailRepository, SailRepositoryConnection }
+import org.openrdf.repository.sail.{SailRepository, SailRepositoryConnection}
+import org.openrdf.{model => sesame}
 
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
