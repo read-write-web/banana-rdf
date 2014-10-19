@@ -46,7 +46,7 @@ trait RDFStoreURIOps extends URIOps[RDFStore] {
 
   def isPureFragment(uri: RDFStore#URI): Boolean = {
     val u = java(uri)
-    import u.{ getFragment => fragment, _ }
+    import u.{getFragment => fragment, _}
     getScheme == null &&
       getUserInfo == null && getAuthority == null &&
       (getPath == null || getPath == "") &&
@@ -90,7 +90,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
   override def makeBNode(): RDFStore#BNode = new RDFStoreBlankNode(RDFStoreW.rdf.createBlankNode())
 
-  override def graphToIterable(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graph.triples
+  def graphToIterable(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graph.triples
 
   override def foldNode[T](node: RDFStore#Node)(funURI: (RDFStore#URI) => T, funBNode: (RDFStore#BNode) => T, funLiteral: (RDFStore#Literal) => T): T = node.jsNode.interfaceName.asInstanceOf[js.String] match {
     case "NamedNode" => funURI(node.asInstanceOf[RDFStoreNamedNode])
@@ -151,8 +151,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
       case _ => funANY
     }
 
-  // graph isomorphism ( why does this have to be created anew every time? ie. why a def? )
-  def iso = new GraphIsomorphism()(new RDFStoreOps())
+  private lazy val iso = new GraphIsomorphism[RDFStore](new SimpleMappingGenerator[RDFStore](VerticeCBuilder.simpleHash))(new RDFStoreOps)
 
   override def isomorphism(left: RDFStore#Graph, right: RDFStore#Graph): Boolean =
     iso.findAnswer(left, right).isSuccess
@@ -209,4 +208,6 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
     new RDFStoreLiteral(js.Dynamic.newInstance(RDFStoreW.rdf_api.Literal)(value, lang, datatypeString))
   }
+
+  override def getTriples(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graphToIterable(graph)
 }
