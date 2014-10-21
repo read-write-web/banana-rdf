@@ -11,14 +11,14 @@ trait RDFStoreModule
 
   type Rdf = RDFStore
 
-  implicit val Ops: RDFStoreOps = new RDFStoreOps
+  implicit val ops: RDFStoreOps = new RDFStoreOps
 
-  implicit val SparqlOps: SparqlOps[RDFStore] = RDFSparqlOps
+  implicit val sparqlOps: SparqlOps[RDFStore] = RDFSparqlOps
 
-  implicit val RecordBinder: binder.RecordBinder[RDFStore] = binder.RecordBinder[RDFStore]
+  implicit val recordBinder: binder.RecordBinder[RDFStore] = binder.RecordBinder[RDFStore]
 
-  implicit val TurtleReader: RDFReader[RDFStore, Turtle] = new RDFStoreTurtleReader
+  implicit val turtleReader: RDFReader[RDFStore, Turtle] = new RDFStoreTurtleReader
 
-  implicit val TurtleWriter: RDFWriter[RDFStore, Turtle] = RDFStoreTurtleWriter
+  implicit val turtleWriter: RDFWriter[RDFStore, Turtle] = RDFStoreTurtleWriter
 
 }

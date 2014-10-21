@@ -193,6 +193,11 @@ object RDFStoreW {
   def rdf_api = rdfstorejs.selectDynamic("rdf")
 
   def apply(options: Map[String, Any]): RDFStoreW = {
+    rdfstorejs = makeRDFStoreJS(options)
+    new RDFStoreW()
+  }
+
+  def makeRDFStoreJS(options: Map[String, Any]):js.Dynamic = {
     val dic = options.foldLeft[js.Dictionary[Any]](js.Dictionary())({
       case (acc, (key, value)) =>
         acc.update(key, value); acc
@@ -206,6 +211,7 @@ object RDFStoreW {
     } else {
       global.rdfstore
     }
+    var rdfstorejs:js.Dynamic = null
     rdfstore.applyDynamic("create")(dic, (store: js.Dynamic) => promise.success{
       rdfstorejs = store
     })
@@ -213,6 +219,6 @@ object RDFStoreW {
     // always succeeds because 'create' is synchronous
     promise.future.value.get.get
 
-    new RDFStoreW()
+    rdfstorejs
   }
 }

@@ -4,6 +4,8 @@ import org.w3.banana.isomorphism.GraphIsomorphism
 import org.w3.banana.{ RDFOps, URIOps }
 import java.net.{ URI => jURI }
 
+import scala.concurrent.Promise
+import scala.concurrent.Future
 import scala.scalajs.js
 
 trait JSUtils {
@@ -210,4 +212,28 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
   }
 
   override def getTriples(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graphToIterable(graph)
+
+  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Future[RDFStore#Graph] = {
+    val promise = Promise[RDFStore#Graph]
+    val cb = {
+      (success: Boolean, res: Any) =>
+        if (success) {
+          if(graph == null)
+            promise.success(new RDFStoreGraph(store.toGraph))
+          else
+            promise.success(new RDFStoreGraph(store.toGraph(graph)))
+        } else {
+          promise.failure(new Exception("Error loading data into the store: " + res))
+        }
+    }
+
+    if (graph == null) {
+      store.applyDynamic("load")(mediaType, data, cb)
+    } else {
+      store.applyDynamic("load")(mediaType, data, graph, cb)
+    }
+
+    promise.future
+  }
+
 }
