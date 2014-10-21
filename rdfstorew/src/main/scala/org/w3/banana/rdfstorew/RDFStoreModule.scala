@@ -11,6 +11,10 @@ trait RDFStoreModule
 
   type Rdf = RDFStore
 
+  implicit val store:GraphStore[Rdf,scalajs.js.Dynamic] = RDFStoreW(Map())
+
+  implicit val sparqlEngine:SparqlEngine[Rdf,scalajs.js.Dynamic] = RDFStoreW(Map())
+
   implicit val ops: RDFStoreOps = new RDFStoreOps
 
   implicit val sparqlOps: SparqlOps[RDFStore] = RDFSparqlOps

@@ -186,11 +186,12 @@ class RDFStoreW()(implicit ops: RDFStoreOps) extends RDFStoreInterface[RDFStore,
 
 object RDFStoreW {
 
-  var rdfstorejs:js.Dynamic = null
+  var rdfstorejs:js.Dynamic = makeRDFStoreJS(Map())
 
-  def rdf = rdfstorejs.selectDynamic("rdf").selectDynamic("api")
+  val rdf = rdfstorejs.selectDynamic("rdf")
 
-  def rdf_api = rdfstorejs.selectDynamic("rdf")
+
+  val rdf_api = rdfstorejs.selectDynamic("rdf").selectDynamic("api")
 
   def apply(options: Map[String, Any]): RDFStoreW = {
     rdfstorejs = makeRDFStoreJS(options)
@@ -211,14 +212,14 @@ object RDFStoreW {
     } else {
       global.rdfstore
     }
-    var rdfstorejs:js.Dynamic = null
+    var newRdfstorejs:js.Dynamic = null
     rdfstore.applyDynamic("create")(dic, (store: js.Dynamic) => promise.success{
-      rdfstorejs = store
+      newRdfstorejs = store
     })
 
     // always succeeds because 'create' is synchronous
     promise.future.value.get.get
 
-    rdfstorejs
+    newRdfstorejs
   }
 }

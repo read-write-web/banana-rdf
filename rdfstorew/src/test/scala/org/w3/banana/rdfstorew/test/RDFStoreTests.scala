@@ -7,7 +7,7 @@ import org.w3.banana.rdfstorew._
 
 object PointedGraphJasmineTesterRDFStore extends PointedGraphJasmineTester[RDFStore]
 
-object GraphUnionJasmineTest extends GraphUnionJasmineTest[RDFStore]
+//object GraphUnionJasmineTest extends GraphUnionJasmineTest[RDFStore]
 
 object DieselGraphConstructJasmineTest extends DieselGraphConstructJasmineTest[RDFStore]
 
@@ -19,11 +19,11 @@ object RecordBinderJasmineTest extends RecordBinderJasmineTest[RDFStore]
 
 object UriSyntaxJasmineTest extends UriSyntaxJasmineTest[RDFStore]
 
-object TurtleTestJasmineSuite extends TurtleTestJasmineSuite[RDFStore]
+// // object TurtleTestJasmineSuite extends TurtleTestJasmineSuite[RDFStore]
 
-object GraphStoreJasmineTest extends GraphStoreJasmineTest[RDFStore](RDFStoreW(Map()))
+// object GraphStoreJasmineTest extends GraphStoreJasmineTest[RDFStore,scalajs.js.Dynamic](RDFStoreW.makeRDFStoreJS(Map()))
 
-object SparqlEngineJasmineTest extends SparqlEngineJasmineTest[RDFStore](RDFStoreW(Map()))
+// object SparqlEngineJasmineTest extends SparqlEngineJasmineTest[RDFStore,scalajs.js.Dynamic](RDFStoreW.makeRDFStoreJS(Map()))
 
-object StandardIsomorphismTest extends IsomorphismTests[RDFStore]
+// object StandardIsomorphismTest extends IsomorphismTests[RDFStore]
 
