@@ -6,7 +6,7 @@ import org.w3.banana.io.{ RDFWriter, Syntax, Turtle }
 
 import scala.util.Try
 
-object RDFStoreTurtleWriter extends RDFWriter[RDFStore, Turtle] {
+object RDFStoreTurtleWriter extends RDFWriter[RDFStore, Try, Turtle] {
 
   val syntax:  Syntax[Turtle] = Syntax.Turtle
 

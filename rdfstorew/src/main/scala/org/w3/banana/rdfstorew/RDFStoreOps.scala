@@ -1,12 +1,13 @@
 package org.w3.banana.rdfstorew
 
-import org.w3.banana.isomorphism.GraphIsomorphism
+import org.w3.banana.isomorphism.{VerticeCBuilder, SimpleMappingGenerator, GraphIsomorphism}
 import org.w3.banana.{ RDFOps, URIOps }
 import java.net.{ URI => jURI }
 
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import scala.scalajs.js
+import scala.util.Try
 
 trait JSUtils {
   def log(obj: RDFStoreRDFNode) = js.Dynamic.global.console.log(obj.jsNode)
@@ -155,8 +156,8 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
   private lazy val iso = new GraphIsomorphism[RDFStore](new SimpleMappingGenerator[RDFStore](VerticeCBuilder.simpleHash))(new RDFStoreOps)
 
-  override def isomorphism(left: RDFStore#Graph, right: RDFStore#Graph): Boolean =
-    iso.findAnswer(left, right).isSuccess
+  override def isomorphism(left: RDFStore#Graph, right: RDFStore#Graph): Boolean = iso.findAnswer(left, right).isSuccess
+
 
   def graphSize(g: RDFStore#Graph): Int = g.size
 
@@ -213,7 +214,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
   override def getTriples(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graphToIterable(graph)
 
-  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Future[RDFStore#Graph] = {
+  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Try[RDFStore#Graph] = {
     val promise = Promise[RDFStore#Graph]
     val cb = {
       (success: Boolean, res: Any) =>
@@ -233,7 +234,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
       store.applyDynamic("load")(mediaType, data, graph, cb)
     }
 
-    promise.future
+    promise.future.value.get
   }
 
 }

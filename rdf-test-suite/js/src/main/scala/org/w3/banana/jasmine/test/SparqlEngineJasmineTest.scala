@@ -3,23 +3,26 @@ package org.w3.banana.jasmine.test
 import java.io._
 
 import org.w3.banana._
+import org.w3.banana.jasmine.test.data.NewTrRDF
+import org.w3.banana.syntax._
 import org.w3.banana.diesel._
 import org.w3.banana.io._
 
 import scala.concurrent.Future
 import scala.scalajs.test.JasmineTest
+import scala.util.Try
 
 /**
- * Ported by Antonio Garrotte from rdf-test-suite in scala.tests to Jasmine Tests
+ * Ported by Antonio Garrote from rdf-test-suite in scala.tests to Jasmine Tests
  */
 abstract class SparqlEngineJasmineTest[Rdf <: RDF, A](
   val store: A
 )(implicit
   ops: RDFOps[Rdf],
-  reader: RDFReader[Rdf, Future, Turtle],
+  reader: RDFReader[Rdf, Try, Turtle],
   sparqlOps: SparqlOps[Rdf],
-  val graphStore: GraphStore[Rdf, Future, A],
-  val sparqlEngine: SparqlEngine[Rdf, Future, A],
+  val graphStore: GraphStore[Rdf, Try, A],
+  val sparqlEngine: SparqlEngine[Rdf, Try, A],
   val lifecycle: Lifecycle[Rdf, A]
 ) extends JasmineTest {
 
@@ -32,9 +35,19 @@ abstract class SparqlEngineJasmineTest[Rdf <: RDF, A](
 
   val foaf = FOAFPrefix(ops)
 
-  val resource = new FileInputStream("rdf-test-suite/src/main/resources/new-tr.rdf")
+  /*
+  val resource = new NewTrRDF().asString  // new FileInputStream("rdf-test-suite/src/main/resources/new-tr.rdf")
 
   val graph = reader.read(resource, "http://example.com").getOrFail()
+*/
+
+  println("FILE INPUT STREAM CLASS?")
+
+  println("LOADING THE RDF RESOURCE")
+  val resource = new FileInputStream("rdf-test-suite/src/main/resources/new-tr.rdf")
+  println("---------------------------")
+
+  val graph = reader.read(resource, "http://example.com").get
 
   val graph1: Rdf#Graph = (
     bnode("betehess")
@@ -82,7 +95,7 @@ abstract class SparqlEngineJasmineTest[Rdf <: RDF, A](
                                  |}""".stripMargin).get
 
       val names: Iterable[String] =
-        store.executeSelect(query).getOrFail().iterator.to[Iterable].map {
+        store.executeSelect(query).get.iterator.to[Iterable].map {
           row => row("name").get.as[String].get //.success.value
         }
       expect(names.toString()).toContain("Alexandre Bertails")
@@ -123,9 +136,11 @@ abstract class SparqlEngineJasmineTest[Rdf <: RDF, A](
           |  }
           |}""".stripMargin).get
 
-      val clonedGraph = store.executeConstruct(query).getOrFail()
+      val clonedGraph = store.executeConstruct(query).get
+
 
       expect(clonedGraph isIsomorphicWith graph) toBe true
+
 
       /*
       val sparqlEngine = SparqlEngine[Rdf](store)
@@ -155,7 +170,7 @@ abstract class SparqlEngineJasmineTest[Rdf <: RDF, A](
                              |    ?ed foaf:name ?name .
                              |  }
                              |}""".stripMargin).get
-      val alexIsThere = store.executeAsk(query).getOrFail()
+      val alexIsThere = store.executeAsk(query).get
 
       expect(alexIsThere) toBe true
       /*
