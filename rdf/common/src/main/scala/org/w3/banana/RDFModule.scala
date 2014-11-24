@@ -51,7 +51,7 @@ trait RDFXMLReaderModule extends RDFModule {
 
 trait TurtleReaderModule extends RDFModule {
 
-  implicit val turtleReader: RDFReader[Rdf, Try, Turtle]
+  implicit val turtleReader: RDFReader[Rdf, Future, Turtle]
 
 }
 
@@ -93,7 +93,7 @@ trait RDFXMLWriterModule extends RDFModule {
 
 trait TurtleWriterModule extends RDFModule {
 
-  implicit val turtleWriter: RDFWriter[Rdf, Try, Turtle]
+  implicit val turtleWriter: RDFWriter[Rdf, Future, Turtle]
 
 }
 

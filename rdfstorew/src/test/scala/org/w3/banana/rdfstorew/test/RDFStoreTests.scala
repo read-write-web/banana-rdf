@@ -5,19 +5,19 @@ import org.w3.banana.jasmine.test._
 import org.w3.banana.rdfstorew._
 
 
-//// object PointedGraphJasmineTesterRDFStore extends PointedGraphJasmineTester[RDFStore]
+object PointedGraphJasmineTesterRDFStore extends PointedGraphJasmineTester[RDFStore]
 
 //object GraphUnionJasmineTest extends GraphUnionJasmineTest[RDFStore]
 
-//// object DieselGraphConstructJasmineTest extends DieselGraphConstructJasmineTest[RDFStore]
+object DieselGraphConstructJasmineTest extends DieselGraphConstructJasmineTest[RDFStore]
 
-//// object RDFStoreWDieselGraphExplorationJasmineTest extends DieselGraphExplorationJasmineTest[RDFStore]
+object RDFStoreWDieselGraphExplorationJasmineTest extends DieselGraphExplorationJasmineTest[RDFStore]
 
-//// object CommonBindersJasmineTest extends CommonBindersJasmineTest[RDFStore]
+object CommonBindersJasmineTest extends CommonBindersJasmineTest[RDFStore]
 
-//// object RecordBinderJasmineTest extends RecordBinderJasmineTest[RDFStore]
+object RecordBinderJasmineTest extends RecordBinderJasmineTest[RDFStore]
 
-//// object UriSyntaxJasmineTest extends UriSyntaxJasmineTest[RDFStore]
+object UriSyntaxJasmineTest extends UriSyntaxJasmineTest[RDFStore]
 
 //object TurtleTestJasmineSuite extends TurtleTestJasmineSuite[RDFStore]
 

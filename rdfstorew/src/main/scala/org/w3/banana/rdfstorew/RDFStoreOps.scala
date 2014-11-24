@@ -7,7 +7,6 @@ import java.net.{ URI => jURI }
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.util.Try
 
 trait JSUtils {
   def log(obj: RDFStoreRDFNode) = js.Dynamic.global.console.log(obj.jsNode)
@@ -214,7 +213,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
   override def getTriples(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graphToIterable(graph)
 
-  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Try[RDFStore#Graph] = {
+  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Future[RDFStore#Graph] = {
     val promise = Promise[RDFStore#Graph]
     val cb = {
       (success: Boolean, res: Any) =>
@@ -234,7 +233,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
       store.applyDynamic("load")(mediaType, data, graph, cb)
     }
 
-    promise.future.value.get
+    promise.future
   }
 
 }
