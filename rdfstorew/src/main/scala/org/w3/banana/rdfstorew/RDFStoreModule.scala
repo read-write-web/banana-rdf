@@ -10,8 +10,8 @@ trait RDFStoreModule
     extends RDFModule
     with RDFOpsModule
     with RecordBinderModule
-    with TurtleReaderModule
-    with TurtleWriterModule {
+    with TurtleReaderFutureModule
+    with TurtleWriterFutureModule {
 
   type Rdf = RDFStore
 
@@ -19,14 +19,14 @@ trait RDFStoreModule
 
   implicit val sparqlEngine:SparqlEngine[Rdf,Future, scalajs.js.Dynamic] = RDFStoreW(Map())
 
-  implicit val ops: RDFStoreOps = new RDFStoreOps
+  implicit val ops: RDFOps[Rdf] = new RDFStoreOps
 
-  implicit val sparqlOps: SparqlOps[RDFStore] = RDFSparqlOps
+  implicit val sparqlOps: SparqlOps[Rdf] = RDFSparqlOps
 
-  implicit val recordBinder: binder.RecordBinder[RDFStore] = binder.RecordBinder[RDFStore]
+  implicit val recordBinder: binder.RecordBinder[Rdf] = binder.RecordBinder[Rdf]
 
-  implicit val turtleReader: RDFReader[RDFStore, Future, Turtle] = new RDFStoreTurtleReader
+  implicit val turtleReader: RDFReader[Rdf, Future, Turtle] = new RDFStoreTurtleReader()(ops.asInstanceOf[RDFStoreOps])
 
-  implicit val turtleWriter: RDFWriter[RDFStore, Future, Turtle] = RDFStoreTurtleWriter
+  implicit val turtleWriter: RDFWriter[Rdf, Future, Turtle] = RDFStoreTurtleWriter
 
 }

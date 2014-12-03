@@ -1,6 +1,6 @@
 package org.w3.banana.rdfstorew
 
-import org.w3.banana.{RDFStore => RDFStoreInterface, SparqlUpdate}
+import org.w3.banana.{RDFStore => RDFStoreInterface, RDFOps, SparqlUpdate}
 
 import scala.concurrent._
 import scala.language.postfixOps
@@ -9,7 +9,7 @@ import scala.scalajs.js
 import scala.scalajs.js.Dynamic.global
 import scala.util.Try
 
-class RDFStoreW()(implicit ops: RDFStoreOps) extends RDFStoreInterface[RDFStore, Future, js.Dynamic] with SparqlUpdate[RDFStore, Future, js.Dynamic] {
+class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFStore, Future, js.Dynamic] with SparqlUpdate[RDFStore, Future, js.Dynamic] {
 
   def executeQuery(store: js.Dynamic, sparql: String): Future[Any] = {
     val promise = Promise[Any]
@@ -207,7 +207,7 @@ object RDFStoreW {
 
   def apply(options: Map[String, Any]): RDFStoreW = {
     rdfstorejs = makeRDFStoreJS(options)
-    new RDFStoreW()
+    new RDFStoreW()(RDFStore.ops)
   }
 
   def makeRDFStoreJS(options: Map[String, Any]):js.Dynamic = {

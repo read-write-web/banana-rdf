@@ -3,7 +3,7 @@ package org.w3.banana.jasmine.test
 import java.io._
 
 import org.w3.banana._
-import org.w3.banana.jasmine.test.data.NewTrRDF
+//import org.w3.banana.jasmine.test.data.NewTrRDF
 import org.w3.banana.syntax._
 import org.w3.banana.diesel._
 import org.w3.banana.io._

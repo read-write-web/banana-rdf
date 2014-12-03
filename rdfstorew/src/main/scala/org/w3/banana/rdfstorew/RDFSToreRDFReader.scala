@@ -6,6 +6,8 @@ import org.w3.banana.io._
 
 import scala.concurrent.Future
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
+import org.w3.banana.RDFOps
+
 //import scala.util.Try
 
 class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[RDFStore, Future, Turtle] {
