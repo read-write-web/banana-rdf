@@ -6,7 +6,7 @@ import scala.scalajs.js
 
 sealed trait JsNodeMatch
 
-case class PlainNode(node: RDFStore#Node) extends JsNodeMatch
+case class PlainNode(node: JSStore#Node) extends JsNodeMatch
 
 case object JsANY extends JsNodeMatch
 
@@ -26,7 +26,7 @@ class SPARQLSolutionTuple(obj: js.Dictionary[js.Any]) extends SPARQLSolution {
   def apply(s: String) = obj.get(s)
 }
 
-trait RDFStore extends RDF {
+trait JSStore extends RDF {
   // types related to the RDF datamodel
   type Graph = RDFStoreGraph
   type Triple = RDFStoreTriple
@@ -103,4 +103,4 @@ object FromLiteralJS {
 */
 }
 
-object RDFStore extends RDFStoreModule
+object JSStore extends RDFStoreModule

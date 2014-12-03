@@ -10,11 +10,11 @@ import org.w3.banana.RDFOps
 
 //import scala.util.Try
 
-class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[RDFStore, Future, Turtle] {
+class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[JSStore, Future, Turtle] {
 
   val syntax = Syntax[Turtle]
 
-  override def read(is:InputStream, base: String): Future[RDFStore#Graph] = {
+  override def read(is:InputStream, base: String): Future[JSStore#Graph] = {
     val text = scala.io.Source.fromInputStream(is).mkString;
     ops.load(RDFStoreW.rdfstorejs, "text/turtle", text, base)//.value.get
   }
@@ -22,7 +22,7 @@ class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[RDFStore
   /** Tries parsing an RDF Graph from a [[Reader]] and a base URI.
     * @param base the base URI to use, to resolve relative URLs found in the InputStream
     * */
-  override def read(reader: Reader, base: String): Future[RDFStore#Graph] = {
+  override def read(reader: Reader, base: String): Future[JSStore#Graph] = {
     val text = Stream.continually(new BufferedReader(reader).readLine()).takeWhile(_ != null).toString()
     ops.load(RDFStoreW.rdfstorejs, "text/turtle", text, base)//.value.get
   }

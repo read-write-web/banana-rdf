@@ -1,6 +1,6 @@
 package org.w3.banana.rdfstorew
 
-import org.w3.banana.{RDFStore => RDFStoreInterface, RDFOps, SparqlUpdate}
+import org.w3.banana.{RDFStore, RDFOps, SparqlUpdate}
 
 import scala.concurrent._
 import scala.language.postfixOps
@@ -9,7 +9,7 @@ import scala.scalajs.js
 import scala.scalajs.js.Dynamic.global
 import scala.util.Try
 
-class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFStore, Future, js.Dynamic] with SparqlUpdate[RDFStore, Future, js.Dynamic] {
+class RDFStoreW()(implicit ops: RDFOps[JSStore]) extends RDFStore[JSStore, Future, js.Dynamic] with SparqlUpdate[JSStore, Future, js.Dynamic] {
 
   def executeQuery(store: js.Dynamic, sparql: String): Future[Any] = {
     val promise = Promise[Any]
@@ -70,7 +70,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
 
 
   /** Executes a Construct query. */
-  override def executeConstruct(store: js.Dynamic, query: RDFStore#ConstructQuery, bindings: Map[String, RDFStore#Node]): Future[RDFStore#Graph] = {
+  override def executeConstruct(store: js.Dynamic, query: JSStore#ConstructQuery, bindings: Map[String, JSStore#Node]): Future[JSStore#Graph] = {
     executeQuery(store, bindQuery(query, bindings)) map {
       g => {
         new RDFStoreGraph(g.asInstanceOf[js.Dynamic])
@@ -79,7 +79,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
   }
 
   /** Executes a Select query. */
-  override def executeSelect(store: js.Dynamic, query: RDFStore#SelectQuery, bindings: Map[String, RDFStore#Node]): Future[RDFStore#Solutions] = {
+  override def executeSelect(store: js.Dynamic, query: JSStore#SelectQuery, bindings: Map[String, JSStore#Node]): Future[JSStore#Solutions] = {
     executeQuery(store, bindQuery(query, bindings)) map {
       solutions =>
         solutions.asInstanceOf[js.Array[js.Dynamic]].map[SPARQLSolutionTuple] {
@@ -89,7 +89,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
   }
 
   /** Executes a Ask query. */
-  override def executeAsk(store: js.Dynamic, query: RDFStore#AskQuery, bindings: Map[String, RDFStore#Node]): Future[Boolean] = {
+  override def executeAsk(store: js.Dynamic, query: JSStore#AskQuery, bindings: Map[String, JSStore#Node]): Future[Boolean] = {
     executeQuery(store, bindQuery(query, bindings)) map {
       b => {
         b.asInstanceOf[Boolean]
@@ -97,14 +97,15 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
     }
   }
 
-  override def executeUpdate(store: js.Dynamic, query: RDFStore#UpdateQuery, bindings: Map[String, RDFStore#Node]): Future[Unit] = {
+  override def executeUpdate(store: js.Dynamic, query: JSStore#UpdateQuery, bindings: Map[String, JSStore#Node]): Future[js.Dynamic] = {
     executeQueryUnit(store, bindQuery(query, bindings)) map identity
+    Future.successful(store)
   }
 
   /**
    * To the graph at `uri`, removes the matching triples
    */
-  override def removeTriples(store: js.Dynamic, graph: RDFStore#URI, triples: Iterable[(RDFStore#NodeMatch, RDFStore#NodeMatch, RDFStore#NodeMatch)]): Future[Unit] = {
+  override def removeTriples(store: js.Dynamic, graph: JSStore#URI, triples: Iterable[(JSStore#NodeMatch, JSStore#NodeMatch, JSStore#NodeMatch)]): Future[Unit] = {
     val promise = Promise[Unit]
     val cb = {
       (success: Boolean, res: Any) =>
@@ -138,7 +139,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
    * To the graph at `uri`, appends the content of `graph`. If there was
    * no previous graph, this would create it.
    */
-  override def appendToGraph(store: js.Dynamic, graph: RDFStore#URI, triples: RDFStore#Graph): Future[Unit] = {
+  override def appendToGraph(store: js.Dynamic, graph: JSStore#URI, triples: JSStore#Graph): Future[Unit] = {
     val promise = Promise[Unit]
     val cb = {
       (success: Boolean, res: Any) =>
@@ -159,7 +160,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
   }
 
   /** Removes the graph at `uri`. */
-  override def removeGraph(store: js.Dynamic, graph: RDFStore#URI): Future[Unit] = {
+  override def removeGraph(store: js.Dynamic, graph: JSStore#URI): Future[Unit] = {
     val promise = Promise[Unit]
     val cb = {
       (success: Boolean, res: Any) =>
@@ -180,7 +181,7 @@ class RDFStoreW()(implicit ops: RDFOps[RDFStore]) extends RDFStoreInterface[RDFS
   }
 
   /** Gets the graph at `uri`. */
-  override def getGraph(store: js.Dynamic, uri: RDFStore#URI): Future[RDFStore#Graph] = {
+  override def getGraph(store: js.Dynamic, uri: JSStore#URI): Future[JSStore#Graph] = {
     val promise = Promise[RDFStoreGraph]
     val cb = {
       (success: Boolean, res: js.Dynamic) =>
@@ -207,7 +208,7 @@ object RDFStoreW {
 
   def apply(options: Map[String, Any]): RDFStoreW = {
     rdfstorejs = makeRDFStoreJS(options)
-    new RDFStoreW()(RDFStore.ops)
+    new RDFStoreW()(JSStore.ops)
   }
 
   def makeRDFStoreJS(options: Map[String, Any]):js.Dynamic = {

@@ -13,7 +13,7 @@ trait RDFStoreModule
     with TurtleReaderFutureModule
     with TurtleWriterFutureModule {
 
-  type Rdf = RDFStore
+  type Rdf = JSStore
 
   implicit val store:GraphStore[Rdf,Future, scalajs.js.Dynamic] = RDFStoreW(Map())
 
