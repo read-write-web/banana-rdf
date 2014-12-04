@@ -16,7 +16,7 @@ class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[JSStore,
 
   override def read(is:InputStream, base: String): Future[JSStore#Graph] = {
     val text = scala.io.Source.fromInputStream(is).mkString;
-    ops.load(RDFStoreW.rdfstorejs, "text/turtle", text, base)//.value.get
+    ops.load(JSStore.jsstore, "text/turtle", text, base)//.value.get
   }
 
   /** Tries parsing an RDF Graph from a [[Reader]] and a base URI.
@@ -24,6 +24,6 @@ class RDFStoreTurtleReader(implicit ops: RDFStoreOps) extends RDFReader[JSStore,
     * */
   override def read(reader: Reader, base: String): Future[JSStore#Graph] = {
     val text = Stream.continually(new BufferedReader(reader).readLine()).takeWhile(_ != null).toString()
-    ops.load(RDFStoreW.rdfstorejs, "text/turtle", text, base)//.value.get
+    ops.load(JSStore.jsstore, "text/turtle", text, base)//.value.get
   }
 }

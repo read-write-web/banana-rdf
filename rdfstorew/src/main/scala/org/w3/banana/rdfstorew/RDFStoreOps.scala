@@ -7,6 +7,7 @@ import java.net.{ URI => jURI }
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import scala.scalajs.js
+import org.w3.banana.rdfstore.Store
 
 trait JSUtils {
   def log(obj: RDFStoreRDFNode) = js.Dynamic.global.console.log(obj.jsNode)
@@ -81,8 +82,9 @@ trait RDFStoreURIOps extends URIOps[JSStore] {
 }
 
 class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
+  import JSStore._
 
-  override def emptyGraph: JSStore#Graph = new RDFStoreGraph(RDFStoreW.rdf.createGraph())
+  override def emptyGraph: JSStore#Graph = new RDFStoreGraph(jsstore.rdf.createGraph())
 
   override implicit def toConcreteNodeMatch(node: JSStore#Node): JSStore#NodeMatch = PlainNode(node)
 
@@ -90,7 +92,7 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   override def fromTriple(triple: JSStore#Triple): (JSStore#Node, JSStore#URI, JSStore#Node) = (triple.subject, triple.predicate, triple.objectt)
 
-  override def makeBNode(): JSStore#BNode = new RDFStoreBlankNode(RDFStoreW.rdf.createBlankNode())
+  override def makeBNode(): JSStore#BNode = new RDFStoreBlankNode(jsstore.rdf.createBlankNode())
 
   def graphToIterable(graph: JSStore#Graph): Iterable[JSStore#Triple] = graph.triples
 
@@ -102,10 +104,11 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   override def makeLang(s: String): JSStore#Lang = s
 
-  override def makeBNodeLabel(s: String): JSStore#BNode = new RDFStoreBlankNode(js.Dynamic.newInstance(RDFStoreW.rdf_api.BlankNode)(s))
+  override def makeBNodeLabel(s: String): JSStore#BNode =
+    new RDFStoreBlankNode(js.Dynamic.newInstance(jsstore.rdf.api.BlankNode)(s))
 
   override def makeLangTaggedLiteral(lexicalForm: String, lang: JSStore#Lang): JSStore#Literal =
-    new RDFStoreLiteral(js.Dynamic.newInstance(RDFStoreW.rdf_api.Literal)(lexicalForm, lang, null))
+    new RDFStoreLiteral(js.Dynamic.newInstance(jsstore.rdf.api.Literal)(lexicalForm, lang, null))
 
   override def fromLiteral(literal: JSStore#Literal): (String, JSStore#URI, Option[JSStore#Lang]) = {
     val lexicalForm: String = literal.nominalValue.asInstanceOf[String]
@@ -124,14 +127,14 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
   }
 
   override def makeUri(s: String): JSStore#URI = {
-    new RDFStoreNamedNode(RDFStoreW.rdf.createNamedNode(s))
+    new RDFStoreNamedNode(jsstore.rdf.createNamedNode(s))
   }
 
   override def makeTriple(s: JSStore#Node, p: JSStore#URI, o: JSStore#Node): JSStore#Triple = {
     val sNode: js.Any = s.jsNode
     val pNode: js.Any = p.jsNode
     val oNode: js.Any = o.jsNode
-    new RDFStoreTriple(RDFStoreW.rdf.createTriple(sNode, pNode, oNode))
+    new RDFStoreTriple(jsstore.rdf.createTriple(sNode, pNode, oNode))
   }
 
   override def ANY: JSStore#NodeAny = JsANY
@@ -142,7 +145,7 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
       triplesArray.push(triple.triple)
     }
 
-    new RDFStoreGraph(RDFStoreW.rdf.createGraph(triplesArray))
+    new RDFStoreGraph(jsstore.rdf.createGraph(triplesArray))
   }
 
   override def fromLang(l: JSStore#Lang): String = l
@@ -208,29 +211,29 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
       datatypeString = getString(datatype)
     }
 
-    new RDFStoreLiteral(js.Dynamic.newInstance(RDFStoreW.rdf_api.Literal)(value, lang, datatypeString))
+    new RDFStoreLiteral(js.Dynamic.newInstance(jsstore.rdf.api.Literal)(value, lang, datatypeString))
   }
 
   override def getTriples(graph: JSStore#Graph): Iterable[JSStore#Triple] = graphToIterable(graph)
 
-  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Future[JSStore#Graph] = {
+  def load(store: Store, mediaType: String, data: String, graph: String = null): Future[JSStore#Graph] = {
     val promise = Promise[JSStore#Graph]
     val cb = {
       (success: Boolean, res: Any) =>
         if (success) {
           if(graph == null)
-            promise.success(new RDFStoreGraph(store.toGraph))
+            promise.success(new RDFStoreGraph(store.asInstanceOf[js.Dynamic].toGraph))
           else
-            promise.success(new RDFStoreGraph(store.toGraph(graph)))
+            promise.success(new RDFStoreGraph(store.asInstanceOf[js.Dynamic].toGraph(graph)))
         } else {
           promise.failure(new Exception("Error loading data into the store: " + res))
         }
     }
 
     if (graph == null) {
-      store.applyDynamic("load")(mediaType, data, cb)
+      store.load(mediaType, data, cb)
     } else {
-      store.applyDynamic("load")(mediaType, data, graph, cb)
+      store.load(mediaType, data, graph, cb)
     }
 
     promise.future

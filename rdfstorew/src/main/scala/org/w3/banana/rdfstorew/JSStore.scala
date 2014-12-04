@@ -103,4 +103,4 @@ object FromLiteralJS {
 */
 }
 
-object JSStore extends RDFStoreModule
+object JSStore extends JSStoreModule

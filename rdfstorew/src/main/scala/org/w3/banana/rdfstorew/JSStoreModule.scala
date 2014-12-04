@@ -5,8 +5,10 @@ import org.w3.banana.io.{RDFWriter, RDFReader, Turtle}
 
 import scala.concurrent.Future
 import scala.util.Try
+import scala.scalajs.js
+import org.w3.banana.rdfstore.Store
 
-trait RDFStoreModule
+trait JSStoreModule
     extends RDFModule
     with RDFOpsModule
     with RecordBinderModule
@@ -15,11 +17,15 @@ trait RDFStoreModule
 
   type Rdf = JSStore
 
-  implicit val store:GraphStore[Rdf,Future, scalajs.js.Dynamic] = RDFStoreW(Map())
-
-  implicit val sparqlEngine:SparqlEngine[Rdf,Future, scalajs.js.Dynamic] = RDFStoreW(Map())
-
   implicit val ops: RDFOps[Rdf] = new RDFStoreOps
+
+  implicit val store: RDFStore[JSStore, Future, Store]
+    with SparqlUpdate[JSStore, Future, Store]
+  = RDFStoreJS.rdfStoreW
+
+  implicit val sparqlEngine:SparqlEngine[Rdf,Future, Store] = store
+
+  val jsstore: Store = new RDFStoreJS(Map()).rdfstorejs
 
   implicit val sparqlOps: SparqlOps[Rdf] = RDFSparqlOps
 

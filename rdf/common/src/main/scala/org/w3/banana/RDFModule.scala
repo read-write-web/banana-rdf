@@ -1,6 +1,5 @@
 package org.w3.banana
 
-import org.w3.banana.io.SparqlQueryResultsReader
 import io._
 import scala.concurrent.Future
 import scala.util.Try
