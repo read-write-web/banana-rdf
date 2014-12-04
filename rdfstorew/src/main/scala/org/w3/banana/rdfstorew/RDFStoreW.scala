@@ -182,7 +182,6 @@ class RDFStoreW()(implicit ops: RDFOps[JSStore]) extends RDFStore[JSStore, Futur
   /** Gets the graph at `uri`. */
   override def getGraph(store: Store, uri: JSStore#URI): Future[JSStore#Graph] = {
     val promise = Promise[JSStore#Graph]
-    println("in get graph. passed uri="+uri)
     store.graph(uri.valueOf, {(success: Boolean, res: js.Any) =>
         if (success) {
           promise.success(new RDFStoreGraph(res.asInstanceOf[js.Dynamic]))
