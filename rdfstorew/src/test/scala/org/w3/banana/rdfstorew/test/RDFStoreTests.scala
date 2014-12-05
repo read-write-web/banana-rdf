@@ -3,6 +3,7 @@ package org.w3.banana.rdfstorew.test
 
 import org.w3.banana.jasmine.test._
 import org.w3.banana.rdfstorew._
+import org.w3.banana.rdfstore.rjs
 
 
 object PointedGraphJasmineTesterRDFStore extends PointedGraphJasmineTester[JSStore]
@@ -23,7 +24,7 @@ object UriSyntaxJasmineTest extends UriSyntaxJasmineTest[JSStore]
 
 //object GraphStoreJasmineTest extends GraphStoreJasmineTest[RDFStore,scalajs.js.Dynamic](RDFStoreW.makeRDFStoreJS(Map()))
 
-object SparqlEngineJasmineTest extends SparqlEngineJasmineTest[JSStore,scalajs.js.Dynamic](RDFStoreW.makeRDFStoreJS(Map()))
+object SparqlEngineJasmineTest extends SparqlEngineJasmineTest[JSStore,rjs.Store](new RDFStoreJS(Map[String,Any]()).makeRDFStoreJS(Map()))
 
 //object StandardIsomorphismTest extends IsomorphismTests[RDFStore]
 

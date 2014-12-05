@@ -7,14 +7,16 @@ import java.net.{ URI => jURI }
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import scala.scalajs.js
-import org.w3.banana.rdfstore.Store
+import scala.sys.process.ProcessLogger
+import org.w3.banana.rdfstore.rjs
+import org.w3.banana.rdfstore.rjs.env
 
 trait JSUtils {
   def log(obj: RDFStoreRDFNode) = js.Dynamic.global.console.log(obj.jsNode)
 
-  def log(obj: RDFStoreTriple) = js.Dynamic.global.console.log(obj.triple)
+  def log(obj: RDFStoreTriple) = js.Dynamic.global.console.log(obj.triple.asInstanceOf[js.Dynamic])
 
-  def log(obj: RDFStoreGraph) = js.Dynamic.global.console.log(obj.graph)
+  def log(obj: RDFStoreGraph) = js.Dynamic.global.console.log(obj.graph.asInstanceOf[js.Dynamic])
 
   def log(obj: js.Dynamic) = {
     js.Dynamic.global.console.log(obj)
@@ -84,7 +86,7 @@ trait RDFStoreURIOps extends URIOps[JSStore] {
 class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
   import JSStore._
 
-  override def emptyGraph: JSStore#Graph = new RDFStoreGraph(jsstore.rdf.createGraph())
+  override def emptyGraph: JSStore#Graph = new RDFStoreGraph(JSStore.rdf.createGraph())
 
   override implicit def toConcreteNodeMatch(node: JSStore#Node): JSStore#NodeMatch = PlainNode(node)
 
@@ -92,7 +94,7 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   override def fromTriple(triple: JSStore#Triple): (JSStore#Node, JSStore#URI, JSStore#Node) = (triple.subject, triple.predicate, triple.objectt)
 
-  override def makeBNode(): JSStore#BNode = new RDFStoreBlankNode(jsstore.rdf.createBlankNode())
+  override def makeBNode(): JSStore#BNode = new RDFStoreBlankNode(JSStore.rdf.createBlankNode())
 
   def graphToIterable(graph: JSStore#Graph): Iterable[JSStore#Triple] = graph.triples
 
@@ -105,10 +107,10 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
   override def makeLang(s: String): JSStore#Lang = s
 
   override def makeBNodeLabel(s: String): JSStore#BNode =
-    new RDFStoreBlankNode(js.Dynamic.newInstance(jsstore.rdf.api.BlankNode)(s))
+    new RDFStoreBlankNode(JSStore.rdf.createBlankNode())
 
   override def makeLangTaggedLiteral(lexicalForm: String, lang: JSStore#Lang): JSStore#Literal =
-    new RDFStoreLiteral(js.Dynamic.newInstance(jsstore.rdf.api.Literal)(lexicalForm, lang, null))
+    new RDFStoreLiteral(JSStore.rdf.createLiteral(lexicalForm, lang, null))
 
   override def fromLiteral(literal: JSStore#Literal): (String, JSStore#URI, Option[JSStore#Lang]) = {
     val lexicalForm: String = literal.nominalValue.asInstanceOf[String]
@@ -127,25 +129,22 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
   }
 
   override def makeUri(s: String): JSStore#URI = {
-    new RDFStoreNamedNode(jsstore.rdf.createNamedNode(s))
+    new RDFStoreNamedNode(JSStore.rdf.createNamedNode(s))
   }
 
   override def makeTriple(s: JSStore#Node, p: JSStore#URI, o: JSStore#Node): JSStore#Triple = {
-    val sNode: js.Any = s.jsNode
-    val pNode: js.Any = p.jsNode
-    val oNode: js.Any = o.jsNode
-    new RDFStoreTriple(jsstore.rdf.createTriple(sNode, pNode, oNode))
+    new RDFStoreTriple(JSStore.rdf.createTriple(s.jsNode, p.jsNode, o.jsNode))
   }
 
   override def ANY: JSStore#NodeAny = JsANY
 
   override def makeGraph(it: Iterable[JSStore#Triple]): JSStore#Graph = {
-    var triplesArray = js.Dynamic.newInstance(global.Array)()
+    val triplesArray = js.Array[rjs.Triple]()
     for (triple <- it) {
       triplesArray.push(triple.triple)
     }
 
-    new RDFStoreGraph(jsstore.rdf.createGraph(triplesArray))
+    new RDFStoreGraph(JSStore.rdf.createGraph(triplesArray))
   }
 
   override def fromLang(l: JSStore#Lang): String = l
@@ -163,24 +162,24 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   def graphSize(g: JSStore#Graph): Int = g.size
 
-  override def find(graph: JSStore#Graph, subject: JSStore#NodeMatch, predicate: JSStore#NodeMatch, objectt: JSStore#NodeMatch): Iterator[JSStore#Triple] = {
+  override def find(graph: RDFStoreGraph, subject: JSStore#NodeMatch, predicate: JSStore#NodeMatch, objectt: JSStore#NodeMatch): Iterator[JSStore#Triple] = {
 
-    val subjectNode: js.Dynamic = subject match {
+    val subjectNode: rjs.Node = subject match {
       case PlainNode(node) => node.jsNode
-      case _ => null
+      case x => null
     }
 
-    val predicateNode: js.Dynamic = predicate match {
+    val predicateNode: rjs.Node = predicate match {
       case PlainNode(node) => node.jsNode
-      case _ => null
+      case x => null
     }
 
-    val objectNode: js.Dynamic = objectt match {
+    val objectNode: rjs.Node = objectt match {
       case PlainNode(node) => node.jsNode
-      case _ => null
+      case x => null
     }
 
-    var filtered: js.Array[js.Dynamic] = graph.graph.applyDynamic("match")(subjectNode, predicateNode, objectNode, null).triples.asInstanceOf[js.Array[js.Dynamic]]
+    var filtered: js.Array[rjs.Triple] = graph.graph.matches(subjectNode, predicateNode, objectNode).triples
     var filteredList: List[JSStore#Triple] = List[JSStore#Triple]()
     for (triple <- filtered) {
       filteredList = filteredList.::(new RDFStoreTriple(triple))
@@ -196,10 +195,9 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
   // graph union
   override def union(graphs: Seq[JSStore#Graph]): JSStore#Graph = graphs.fold(emptyGraph)(_ merge _)
 
-  override def makeLiteral(lexicalForm: String, datatype: JSStore#URI): JSStore#Literal = {
+  override def makeLiteral(lexicalForm: String, datatype: RDFStoreNamedNode): JSStore#Literal = {
     var value = lexicalForm
     var lang: String = null
-    var datatypeString: String = null
 
     if (lexicalForm.indexOf("@") != -1) {
       val parts = lexicalForm.split("@")
@@ -207,33 +205,29 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
       lang = parts(1)
     }
 
-    if (datatype != null) {
-      datatypeString = getString(datatype)
-    }
+    val datatypeString = if (datatype != null) datatype.node else null
 
-    new RDFStoreLiteral(js.Dynamic.newInstance(jsstore.rdf.api.Literal)(value, lang, datatypeString))
+    new RDFStoreLiteral(JSStore.rdf.createLiteral(value, lang, datatypeString))
   }
 
   override def getTriples(graph: JSStore#Graph): Iterable[JSStore#Triple] = graphToIterable(graph)
 
-  def load(store: Store, mediaType: String, data: String, graph: String = null): Future[JSStore#Graph] = {
+  def load(store: rjs.Store, mediaType: String, data: String, graphUri: String = null): Future[JSStore#Graph] = {
     val promise = Promise[JSStore#Graph]
-    val cb = {
-      (success: Boolean, res: Any) =>
-        if (success) {
-          if(graph == null)
-            promise.success(new RDFStoreGraph(store.asInstanceOf[js.Dynamic].toGraph))
-          else
-            promise.success(new RDFStoreGraph(store.asInstanceOf[js.Dynamic].toGraph(graph)))
-        } else {
-          promise.failure(new Exception("Error loading data into the store: " + res))
-        }
-    }
+    val cb: js.Function2[Boolean,js.Any,Any] = (success: Boolean, numTriplesUploadedOrError: Any) =>
+      if (success) {
+        store.graph(graphUri, {
+          (success: Boolean, graphOrError: Any) =>
+            if (success) promise.success(new RDFStoreGraph(graphOrError.asInstanceOf[rjs.Graph]))
+            else promise.failure(new Exception("could not extract data from database " + graphOrError))
+        })
+      } else promise.failure(new Exception("Error loading data into the store: " + numTriplesUploadedOrError))
 
-    if (graph == null) {
+
+    if (graphUri == null) {
       store.load(mediaType, data, cb)
     } else {
-      store.load(mediaType, data, graph, cb)
+      store.load(mediaType, data, graphUri, cb)
     }
 
     promise.future

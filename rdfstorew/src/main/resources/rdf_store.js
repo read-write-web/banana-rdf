@@ -24710,7 +24710,7 @@ RDFJSInterface.Graph.prototype.add = function(triple) {
     for(var i=0; i<this.actions.length; i++) {
         triple = this.actions[i](triple);
     }
-    
+
     var id = triple.subject.toString()+triple.predicate.toString()+triple.object.toString();
     if(!this.duplicates[id]) {
         this.duplicates[id] = true;
