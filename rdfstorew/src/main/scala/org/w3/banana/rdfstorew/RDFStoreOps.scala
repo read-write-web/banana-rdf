@@ -212,17 +212,11 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   override def getTriples(graph: JSStore#Graph): Iterable[JSStore#Triple] = graphToIterable(graph)
 
-  def load(store: rjs.Store, mediaType: String, data: String, graphUri: String = null): Future[JSStore#Graph] = {
-    val promise = Promise[JSStore#Graph]
+  def load(store: rjs.Store, mediaType: String, data: String, graphUri: String = null): Future[Int] = {
+    val promise = Promise[Int]
     val cb: js.Function2[Boolean,js.Any,Any] = (success: Boolean, numTriplesUploadedOrError: Any) =>
-      if (success) {
-        store.graph(graphUri, {
-          (success: Boolean, graphOrError: Any) =>
-            if (success) promise.success(new RDFStoreGraph(graphOrError.asInstanceOf[rjs.Graph]))
-            else promise.failure(new Exception("could not extract data from database " + graphOrError))
-        })
-      } else promise.failure(new Exception("Error loading data into the store: " + numTriplesUploadedOrError))
-
+      if (success) promise.success(numTriplesUploadedOrError.asInstanceOf[Int])
+      else promise.failure(new Exception("Error loading data into the store: " + numTriplesUploadedOrError))
 
     if (graphUri == null) {
       store.load(mediaType, data, cb)

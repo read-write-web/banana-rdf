@@ -5,14 +5,9 @@ import java.io.{BufferedReader, Reader, InputStream}
 import org.w3.banana.io._
 
 import scala.concurrent.{Promise, Future}
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
-import org.w3.banana.RDFOps
+import org.w3.banana.{rdfstorew, RDFOps}
 import scala.scalajs.js
-import org.w3.banana.rdfstore
-import org.w3.banana.rdfstorew.RDFStoreGraph
-import org.w3.banana.rdfstore.rjs.{Triple, Graph}
-import org.w3.banana.rdfstore.rjs
-import scala.scalajs.js.annotation.JSExport
+import org.w3.banana.rdfstore.rjs.Triple
 
 //import scala.util.Try
 
@@ -23,8 +18,17 @@ class RDFStoreTurtleReader extends RDFReader[JSStore, Future, Turtle] {
     parse( ttl, base)
   }
 
+
     def parse(turtleText: String, base: String): Future[JSStore#Graph] = {
-      JSStore.rdfstoreOps.load(JSStore.jsstore, "text/turtle", turtleText, base)//.value.get
+      import JSStore.ops._
+      //the run-now execution context should be fine as the two methods below work with callbacks
+      //that presumably uses javascripts task queue (
+      //todo: to be verified
+      import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
+      for {
+        i <- JSStore.rdfstoreOps.load(JSStore.jsstore, "text/turtle", turtleText, base)
+        g <- JSStore.store.getGraph(JSStore.jsstore, URI(base))
+      } yield g
     }
 
 //  avoiding the store to parse stuff here is not as easy as the following

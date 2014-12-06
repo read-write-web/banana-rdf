@@ -36,7 +36,30 @@ class Store(callback: js.Any = null, params: js.Any = null) extends js.Object {
   // this function returns in the callback the number of triples read
   def load(mediaType: String, data: String, cb: CallBack): Unit = ???
 
-  // this function returns in the callback the number of triples read
+  /**
+   * Load triples into a graph in the store. Data can be passed directly to the method
+   * or a remote URI specifying where the data is located can be used.<br/>
+   *<br/>
+   * If the data is passed directly to the load function, the media type stating the format
+   * of the data must also be passed to the function.<br/>
+   *<br/>
+   * If a URI is passed as a parameter, the store will attempt to perform content negotiation
+   * with the remote server and get a representation for the RDF data matching one of the
+   * the RDF parsers registered in the store. In this case, the media type parameter must be
+   * set to the <code>'remote'</code> value.<br/>
+   *<br/>
+   * An additional URI for the graph where the parsed data will be loaded and a callback function
+   * can be also passed as parameters. If no graph is specified, triples will be loaded in the
+   * default graph.<br/>
+   *<br/>
+   * By default loading data will not trigger notification through the events API. If events needs to
+   * be trigger, the functio <code>setBatchLoadEvents</code> must be invoked with a true parameter.
+   *
+   * @param mediaType mediaType Media type (application/json, text/n3...) of the data to be parsed or the value <code>'remote'</code> if a URI for the data is passed instead
+   * @param data data RDF data to be parsed and loaded or an URI where the data will be retrieved after performing content negotiation
+   * @param uri  Graph name where the parsed triples will be inserted. If it is not specified, triples will be loaded in the default graph
+   * @param cb   callback that will be invoked with a success notification and the number of triples loaded.
+   */
   def load(mediaType: String, data: String, uri: String, cb: CallBack): Unit = ???
 
   def rdf: env = ???
