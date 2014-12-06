@@ -212,6 +212,21 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
   override def getTriples(graph: JSStore#Graph): Iterable[JSStore#Triple] = graphToIterable(graph)
 
+
+  def loadRemote(store: rjs.Store, graphUri: JSStore#URI): Future[Int] = {
+    println("graphUri="+graphUri)
+    assert(graphUri != null)
+
+    val promise = Promise[Int]
+    val cb: js.Function2[Boolean,js.Any,Any] = (success: Boolean, numTriplesUploadedOrError: Any) =>
+      if (success) promise.success(numTriplesUploadedOrError.asInstanceOf[Int])
+      else promise.failure(new Exception("Error loading data into the store: " + numTriplesUploadedOrError))
+
+    store.load("remote", graphUri.nominalValue, graphUri.nominalValue, cb)
+
+    promise.future
+  }
+
   def load(store: rjs.Store, mediaType: String, data: String, graphUri: String = null): Future[Int] = {
     val promise = Promise[Int]
     val cb: js.Function2[Boolean,js.Any,Any] = (success: Boolean, numTriplesUploadedOrError: Any) =>

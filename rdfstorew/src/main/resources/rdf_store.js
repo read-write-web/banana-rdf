@@ -6001,8 +6001,8 @@ var RDFLoader = {};
 // imports
 var N3Parser = RVN3Parser;
 RDFLoader.RDFLoader = function (params) {
-    this.precedences = ["text/turtle", "text/n3", "application/ld+json", "application/json"];
-    this.parsers = {"text/turtle":N3Parser.parser, "text/n3":N3Parser.parser, "application/ld+json":JSONLDParser.parser, "application/json":JSONLDParser.parser};
+    this.precedences = ["application/n-triples", "text/turtle", "application/ld+json", "application/json", "text/n3"];
+    this.parsers = {"application/n-triples":N3Parser.parser, "text/turtle": N3Parser.parser, "text/n3": N3Parser.parser, "application/ld+json": JSONLDParser.parser, "application/json": JSONLDParser.parser};
     if (params != null) {
         for (var mime in params["parsers"]) {
             this.parsers[mime] = params["parsers"][mime];
@@ -6019,14 +6019,16 @@ RDFLoader.RDFLoader = function (params) {
     }
 
     this.acceptHeaderValue = "";
+    var qstep = 0.6 / this.precedences.length;
     for (var i = 0; i < this.precedences.length; i++) {
-        if (i != 0) {
-            this.acceptHeaderValue = this.acceptHeaderValue + "," + this.precedences[i];
-        } else {
-            this.acceptHeaderValue = this.acceptHeaderValue + this.precedences[i];
+        var mimeqvalue = "" + this.precedences[i] + ";q=" + (1 - (qstep * i));
+        if (i > 0) {
+            this.acceptHeaderValue = this.acceptHeaderValue + ",";
         }
+        this.acceptHeaderValue = this.acceptHeaderValue + mimeqvalue;
     }
-};
+
+}
 
 RDFLoader.RDFLoader.prototype.registerParser = function(mediaType, parser) {
     this.parsers[mediaType] = parser;

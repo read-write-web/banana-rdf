@@ -417,6 +417,7 @@ object BananaRdfBuild extends Build {
     settings = buildSettings ++ sjsDeps ++ scalaz_js ++ Seq(
       resolvers += sonatypeRepo,
       jsDependencies += ProvidedJS / "rdf_store.js",
+      jsDependencies += "org.webjars" % "jquery" % "1.10.2" / "jquery.js",
       jsDependencies += "org.webjars" % "momentjs" % "2.7.0" / "moment.js",
       skip in packageJSDependencies := false
     ) ++ jasmine_js
