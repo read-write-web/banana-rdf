@@ -179,7 +179,7 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
       case x => null
     }
 
-    var filtered: js.Array[rjs.Triple] = graph.graph.matches(subjectNode, predicateNode, objectNode).triples
+    var filtered: js.Array[rjs.Triple] = graph.graph.matches(subjectNode, predicateNode, objectNode).toArray
     var filteredList: List[JSStore#Triple] = List[JSStore#Triple]()
     for (triple <- filtered) {
       filteredList = filteredList.::(new RDFStoreTriple(triple))
@@ -214,7 +214,6 @@ class RDFStoreOps extends RDFOps[JSStore] with RDFStoreURIOps with JSUtils {
 
 
   def loadRemote(store: rjs.Store, graphUri: JSStore#URI): Future[Int] = {
-    println("graphUri="+graphUri)
     assert(graphUri != null)
 
     val promise = Promise[Int]

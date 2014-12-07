@@ -8164,7 +8164,7 @@ SparqlParser.parser = (function(){
       }
       
       function parse_DescribeQuery() {
-        var result0, result1, result2, result3, result4;
+        var result0, result0b, result1, result2, result3, result4;
         var pos0;
         
         reportFailures++;
@@ -8179,6 +8179,12 @@ SparqlParser.parser = (function(){
           }
         }
         if (result0 !== null) {
+            result0b = []
+            result2 = parse_WS();
+            while (result2 !== null) {
+                result0b.push(result2);
+                result2 = parse_WS();
+            }
           result2 = parse_VarOrIRIref();
           if (result2 !== null) {
             result1 = [];
@@ -8202,6 +8208,12 @@ SparqlParser.parser = (function(){
           }
           if (result1 !== null) {
             result2 = [];
+              result0b = parse_WS();
+              while (result0b !== null) {
+                  result2.push(result0b);
+                  result0b = parse_WS();
+              }
+            result2 = []
             result3 = parse_DatasetClause();
             while (result3 !== null) {
               result2.push(result3);

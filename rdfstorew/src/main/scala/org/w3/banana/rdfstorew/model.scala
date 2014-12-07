@@ -72,9 +72,8 @@ class RDFStoreTriple(node: rjs.Triple) {
 }
 
 class RDFStoreGraph(val graph: rjs.Graph) {
-  def node = graph.asInstanceOf[js.Dynamic]
-  def triples: js.Array[RDFStoreTriple] = {
-    graph.triples.map((t: rjs.Triple) => new RDFStoreTriple(t))
+  def triples(): js.Array[RDFStoreTriple] = {
+    graph.toArray.map((t: rjs.Triple) => new RDFStoreTriple(t))
   }
 
   def add(triple: RDFStoreTriple): RDFStoreGraph = {
@@ -98,6 +97,6 @@ class RDFStoreGraph(val graph: rjs.Graph) {
 
   def dup: RDFStoreGraph = new RDFStoreGraph(graph.dup())
 
-  def size: Int = triples.length
+  def size: Int = graph.toArray.length
 
 }

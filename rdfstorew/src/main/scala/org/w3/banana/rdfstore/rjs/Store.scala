@@ -130,8 +130,7 @@ trait Triple extends js.Object  {
 @JSName("RDFJSInterface.Graph")
 trait Graph extends js.Object {
 
-  def triples: js.Array[rjs.Triple] = ???
-  def length: Int = ???
+  def toArray(): js.Array[rjs.Triple] = ???
   def add(triple: rjs.Triple): this.type = ???
   def remove(triple: rjs.Triple): this.type = ???
   def merge(g: rjs.Graph): rjs.Graph = ???
