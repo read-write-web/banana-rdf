@@ -111,6 +111,12 @@ trait TurtleWriterFutureModule extends RDFModule {
 }
 
 
+trait NTriplesWriterModule extends RDFModule {
+
+  implicit val ntriplesWriter: RDFWriter[Rdf, Try, NTriples]
+
+}
+
 trait WriterSelectorModule extends RDFModule {
 
   implicit val writerSelector: RDFWriterSelector[Rdf, Try]
