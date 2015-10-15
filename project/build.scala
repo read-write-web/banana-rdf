@@ -380,7 +380,7 @@ object BananaRdfBuild extends Build {
       libraryDependencies += jsonldJava,
       publishMavenStyle := true
     )
-  ).dependsOn(rdf_jvm, ntriples_jvm, plantain_common_jvm % "compile;test->test", rdfTestSuite_jvm % "test-internal->compile")
+  ).dependsOn(rdf_jvm, ntriples_jvm, plantain_common_jvm, rdfTestSuite_jvm % "test-internal->compile")
     .aggregate(plantain_common_jvm)
 
   lazy val plantain_common_jvm = Project(
@@ -397,7 +397,7 @@ object BananaRdfBuild extends Build {
     settings = buildSettings ++ Seq(
       publishMavenStyle := true
     )
-  ).enablePlugins(SbtScalajs).dependsOn(rdf_js, ntriples_js,  plantain_common_js % "compile;test->test", rdfTestSuite_js % "test-internal->compile")
+  ).enablePlugins(SbtScalajs).dependsOn(rdf_js, ntriples_js, plantain_common_js % "compile;test->test", rdfTestSuite_js % "test-internal->compile")
     .aggregate(plantain_common_js)
 
   lazy val plantain_common_js = Project(
