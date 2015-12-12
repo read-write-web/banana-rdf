@@ -1,6 +1,6 @@
 package org.w3.banana.rdfstorew
 
-import org.w3.banana.{ SparqlOps, VarNotFound }
+import org.w3.banana.{Prefix, SparqlOps, VarNotFound}
 
 import scala.util.{ Failure, Try, Success }
 
@@ -40,7 +40,7 @@ object RDFSparqlOps extends SparqlOps[RDFStore] {
                   node.asInstanceOf[js.Dynamic].selectDynamic("type") == null) {
                   null
                 } else {
-                  RDFStore.Ops.makeUri(node.asInstanceOf[js.Dynamic].selectDynamic("type").asInstanceOf[String])
+                  RDFStore.ops.makeUri(node.asInstanceOf[js.Dynamic].selectDynamic("type").asInstanceOf[String])
                 }
               }
 
@@ -54,22 +54,22 @@ object RDFSparqlOps extends SparqlOps[RDFStore] {
               }
 
               if (lang != null) {
-                RDFStore.Ops.makeLangTaggedLiteral(
+                RDFStore.ops.makeLangTaggedLiteral(
                   node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String],
                   lang
                 )
               } else {
-                RDFStore.Ops.makeLiteral(
+                RDFStore.ops.makeLiteral(
                   node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String],
                   datatype
                 )
               }
             }
             case "blank" => {
-              RDFStore.Ops.makeBNodeLabel(node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String])
+              RDFStore.ops.makeBNodeLabel(node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String])
             }
             case "uri" => {
-              RDFStore.Ops.makeUri(node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String])
+              RDFStore.ops.makeUri(node.asInstanceOf[js.Dynamic].selectDynamic("value").asInstanceOf[String])
             }
             case _ => throw new Exception("Unknown solution type:'" + node.asInstanceOf[js.Dynamic].selectDynamic("token") + "'")
           }
@@ -86,6 +86,28 @@ object RDFSparqlOps extends SparqlOps[RDFStore] {
     s
   }
 
-  def solutionIterator(solutions: RDFStore#Solutions): Iterable[RDFStore#Solution] = solutions
+  def solutionIterator(solutions: RDFStore#Solutions): Iterator[RDFStore#Solution] = solutions.toIterator
 
+
+
+  override def parseSelect(query: String, prefixes: Seq[Prefix[RDFStore]]): Try[RDFStore#SelectQuery] = Success(SelectQuery(query))
+
+  override def parseConstruct(query: String, prefixes: Seq[Prefix[RDFStore]]): Try[RDFStore#ConstructQuery] = Success(ConstructQuery(query))
+
+  /**
+   * A general query constructor.
+   *
+   * When this is used it is usually because the query type is not
+   * known in advance, ( as when a query is received over the
+   * internet). As a result the response is a validation, as the
+   * query may not have been tested for validity.
+   *
+   * @param query a Sparql query
+   * @return A validation containing the Query
+   */
+  override def parseQuery(query: String, prefixes: Seq[Prefix[RDFStore]]): Try[RDFStore#Query] = Query(query)
+
+  override def parseAsk(query: String, prefixes: Seq[Prefix[RDFStore]]): Try[RDFStore#AskQuery] = Success(AskQuery(query))
+
+  override def parseUpdate(query: String, prefixes: Seq[Prefix[RDFStore]]): Try[RDFStore#UpdateQuery] = Success(UpdateQuery(query))
 }

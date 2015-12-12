@@ -48,10 +48,10 @@ trait RDFStore extends RDF {
   type AskQuery = String
   type UpdateQuery = String
 
-  type Solution = SPARQLSolution
+  type Solution = SPARQLSolutionTuple
 
   // instead of TupleQueryResult so that it's eager instead of lazy
-  type Solutions = Array[SPARQLSolution]
+  type Solutions = Array[Solution]
 }
 
 /*

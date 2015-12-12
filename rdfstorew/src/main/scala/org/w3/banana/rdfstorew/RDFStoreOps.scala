@@ -1,9 +1,11 @@
 package org.w3.banana.rdfstorew
 
-import org.w3.banana.isomorphism.GraphIsomorphism
+import org.w3.banana.isomorphism.{VerticeCBuilder, SimpleMappingGenerator, GraphIsomorphism}
 import org.w3.banana.{ RDFOps, URIOps }
 import java.net.{ URI => jURI }
 
+import scala.concurrent.Promise
+import scala.concurrent.Future
 import scala.scalajs.js
 
 trait JSUtils {
@@ -46,7 +48,7 @@ trait RDFStoreURIOps extends URIOps[RDFStore] {
 
   def isPureFragment(uri: RDFStore#URI): Boolean = {
     val u = java(uri)
-    import u.{ getFragment => fragment, _ }
+    import u.{getFragment => fragment, _}
     getScheme == null &&
       getUserInfo == null && getAuthority == null &&
       (getPath == null || getPath == "") &&
@@ -90,7 +92,7 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
   override def makeBNode(): RDFStore#BNode = new RDFStoreBlankNode(RDFStoreW.rdf.createBlankNode())
 
-  override def graphToIterable(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graph.triples
+  def graphToIterable(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graph.triples
 
   override def foldNode[T](node: RDFStore#Node)(funURI: (RDFStore#URI) => T, funBNode: (RDFStore#BNode) => T, funLiteral: (RDFStore#Literal) => T): T = node.jsNode.interfaceName.asInstanceOf[js.String] match {
     case "NamedNode" => funURI(node.asInstanceOf[RDFStoreNamedNode])
@@ -151,11 +153,10 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
       case _ => funANY
     }
 
-  // graph isomorphism ( why does this have to be created anew every time? ie. why a def? )
-  def iso = new GraphIsomorphism()(new RDFStoreOps())
+  private lazy val iso = new GraphIsomorphism[RDFStore](new SimpleMappingGenerator[RDFStore](VerticeCBuilder.simpleHash))(new RDFStoreOps)
 
-  override def isomorphism(left: RDFStore#Graph, right: RDFStore#Graph): Boolean =
-    iso.findAnswer(left, right).isSuccess
+  override def isomorphism(left: RDFStore#Graph, right: RDFStore#Graph): Boolean = iso.findAnswer(left, right).isSuccess
+
 
   def graphSize(g: RDFStore#Graph): Int = g.size
 
@@ -209,4 +210,30 @@ class RDFStoreOps extends RDFOps[RDFStore] with RDFStoreURIOps with JSUtils {
 
     new RDFStoreLiteral(js.Dynamic.newInstance(RDFStoreW.rdf_api.Literal)(value, lang, datatypeString))
   }
+
+  override def getTriples(graph: RDFStore#Graph): Iterable[RDFStore#Triple] = graphToIterable(graph)
+
+  def load(store: js.Dynamic, mediaType: String, data: String, graph: String = null): Future[RDFStore#Graph] = {
+    val promise = Promise[RDFStore#Graph]
+    val cb = {
+      (success: Boolean, res: Any) =>
+        if (success) {
+          if(graph == null)
+            promise.success(new RDFStoreGraph(store.toGraph))
+          else
+            promise.success(new RDFStoreGraph(store.toGraph(graph)))
+        } else {
+          promise.failure(new Exception("Error loading data into the store: " + res))
+        }
+    }
+
+    if (graph == null) {
+      store.applyDynamic("load")(mediaType, data, cb)
+    } else {
+      store.applyDynamic("load")(mediaType, data, graph, cb)
+    }
+
+    promise.future
+  }
+
 }

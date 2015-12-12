@@ -112,10 +112,8 @@ class ObjectExamplesJasmine[Rdf <: RDF]()(implicit ops: RDFOps[Rdf], recordBinde
   }
 
 }
-
+/*
 class TestApp[Rdf <: RDF](store: RDFStoreInterface[Rdf])(implicit ops: RDFOps[Rdf]) extends JSApp with JSUtils {
-
-  import ops._
 
   val foaf = FOAFPrefix[Rdf]
 
@@ -223,3 +221,4 @@ class TestApp[Rdf <: RDF](store: RDFStoreInterface[Rdf])(implicit ops: RDFOps[Rd
 }
 
 object TestApp extends TestApp[RDFStore](RDFStoreW(Map()))
+*/
